@@ -1,0 +1,97 @@
+version: '3.9'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: piposmart-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: piposmart_db
+      MYSQL_USER: piposmart_user
+      MYSQL_PASSWORD: piposmart_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - piposmart-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: piposmart-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - piposmart-network
+
+  # Go API (Main Backend)
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: piposmart-api
+    environment:
+      DB_DSN: piposmart_user:piposmart_pass@tcp(mysql:3306)/piposmart_db?charset=utf8mb4&parseTime=True&loc=Local
+      REDIS_ADDR: redis:6379
+      APP_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - piposmart-network
+
+  # Rust Image Service
+  image-service:
+    build:
+      context: ./services/image-service
+      dockerfile: Dockerfile
+    container_name: piposmart-image-service
+    ports:
+      - "3001:3001"
+    environment:
+      RUST_LOG: info
+    networks:
+      - piposmart-network
+
+  # Rust Report Service
+  report-service:
+    build:
+      context: ./services/report-service
+      dockerfile: Dockerfile
+    container_name: piposmart-report-service
+    ports:
+      - "3002:3002"
+    environment:
+      RUST_LOG: info
+      DB_URL: mysql://piposmart_user:piposmart_pass@mysql:3306/piposmart_db
+    depends_on:
+      - mysql
+    networks:
+      - piposmart-network
+
+  # Rust Analytics Service
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile
+    container_name: piposmart-analytics-service
+    ports:
+      - "3003:3003"
+    environment:
+      RUST_LOG: info
+      DB_URL: mysql://piposmart_user:piposmart_pass@mysql:3306/piposmart_db
+    depends_on:
+      - mysql
+    networks:
+      - piposmart-network
+
+volumes:
+  mysql_data:
+
+networks:
+  piposmart-network:
+    driver: bridge
