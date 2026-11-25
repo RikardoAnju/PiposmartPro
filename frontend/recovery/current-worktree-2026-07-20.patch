@@ -1,0 +1,2788 @@
+diff --git a/ios/Podfile.lock b/ios/Podfile.lock
+index bcb67ec..a05adaa 100644
+--- a/ios/Podfile.lock
++++ b/ios/Podfile.lock
+@@ -1,15 +1,282 @@
+ PODS:
++  - app_links (7.0.0):
++    - Flutter
++  - AppAuth (1.7.6):
++    - AppAuth/Core (= 1.7.6)
++    - AppAuth/ExternalUserAgent (= 1.7.6)
++  - AppAuth/Core (1.7.6)
++  - AppAuth/ExternalUserAgent (1.7.6):
++    - AppAuth/Core
++  - AppCheckCore (11.3.1):
++    - GoogleUtilities/Environment (~> 8.0)
++    - GoogleUtilities/UserDefaults (~> 8.0)
++    - PromisesObjC (~> 2.4)
++    - PromisesSwift (~> 2.4)
++    - RecaptchaInterop (~> 101.0)
++  - audioplayers_darwin (0.0.1):
++    - Flutter
++    - FlutterMacOS
++  - device_info_plus (0.0.1):
++    - Flutter
++  - file_picker (0.0.1):
++    - Flutter
++    - FlutterMacOS
++  - Firebase/CoreOnly (12.15.0):
++    - FirebaseCore (~> 12.15.0)
++  - Firebase/Messaging (12.15.0):
++    - Firebase/CoreOnly
++    - FirebaseMessaging (~> 12.15.0)
++  - firebase_core (4.11.0):
++    - Firebase/CoreOnly (= 12.15.0)
++    - Flutter
++  - firebase_messaging (16.4.1):
++    - Firebase/Messaging (= 12.15.0)
++    - firebase_core
++    - Flutter
++  - FirebaseCore (12.15.0):
++    - FirebaseCoreInternal (~> 12.15.0)
++    - GoogleUtilities/Environment (~> 8.1)
++    - GoogleUtilities/Logger (~> 8.1)
++  - FirebaseCoreInternal (12.15.0):
++    - "GoogleUtilities/NSData+zlib (~> 8.1)"
++  - FirebaseInstallations (12.15.0):
++    - FirebaseCore (~> 12.15.0)
++    - GoogleUtilities/Environment (~> 8.1)
++    - GoogleUtilities/UserDefaults (~> 8.1)
++    - PromisesObjC (~> 2.4)
++  - FirebaseMessaging (12.15.0):
++    - FirebaseCore (~> 12.15.0)
++    - FirebaseInstallations (~> 12.15.0)
++    - GoogleDataTransport (~> 10.1)
++    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
++    - GoogleUtilities/Environment (~> 8.1)
++    - GoogleUtilities/Reachability (~> 8.1)
++    - GoogleUtilities/UserDefaults (~> 8.1)
++    - nanopb (~> 3.30910.0)
+   - Flutter (1.0.0)
++  - flutter_contacts (0.0.1):
++    - Flutter
++  - flutter_local_notifications (0.0.1):
++    - Flutter
++  - flutter_secure_storage_darwin (10.0.0):
++    - Flutter
++    - FlutterMacOS
++  - google_sign_in_ios (0.0.1):
++    - AppAuth (>= 1.7.4)
++    - Flutter
++    - FlutterMacOS
++    - GoogleSignIn (~> 8.0)
++    - GTMSessionFetcher (>= 3.4.0)
++  - GoogleDataTransport (10.1.0):
++    - nanopb (~> 3.30910.0)
++    - PromisesObjC (~> 2.4)
++  - GoogleSignIn (8.0.0):
++    - AppAuth (< 2.0, >= 1.7.3)
++    - AppCheckCore (~> 11.0)
++    - GTMAppAuth (< 5.0, >= 4.1.1)
++    - GTMSessionFetcher/Core (~> 3.3)
++  - GoogleUtilities/AppDelegateSwizzler (8.1.2):
++    - GoogleUtilities/Environment
++    - GoogleUtilities/Logger
++    - GoogleUtilities/Network
++    - GoogleUtilities/Privacy
++  - GoogleUtilities/Environment (8.1.2):
++    - GoogleUtilities/Privacy
++  - GoogleUtilities/Logger (8.1.2):
++    - GoogleUtilities/Environment
++    - GoogleUtilities/Privacy
++  - GoogleUtilities/Network (8.1.2):
++    - GoogleUtilities/Logger
++    - "GoogleUtilities/NSData+zlib"
++    - GoogleUtilities/Privacy
++    - GoogleUtilities/Reachability
++  - "GoogleUtilities/NSData+zlib (8.1.2)":
++    - GoogleUtilities/Privacy
++  - GoogleUtilities/Privacy (8.1.2)
++  - GoogleUtilities/Reachability (8.1.2):
++    - GoogleUtilities/Logger
++    - GoogleUtilities/Privacy
++  - GoogleUtilities/UserDefaults (8.1.2):
++    - GoogleUtilities/Logger
++    - GoogleUtilities/Privacy
++  - GTMAppAuth (4.1.1):
++    - AppAuth/Core (~> 1.7)
++    - GTMSessionFetcher/Core (< 4.0, >= 3.3)
++  - GTMSessionFetcher (3.5.0):
++    - GTMSessionFetcher/Full (= 3.5.0)
++  - GTMSessionFetcher/Core (3.5.0)
++  - GTMSessionFetcher/Full (3.5.0):
++    - GTMSessionFetcher/Core
++  - image_picker_ios (0.0.1):
++    - Flutter
++  - in_app_purchase_storekit (0.0.1):
++    - Flutter
++    - FlutterMacOS
++  - mobile_scanner (7.0.0):
++    - Flutter
++    - FlutterMacOS
++  - nanopb (3.30910.0):
++    - nanopb/decode (= 3.30910.0)
++    - nanopb/encode (= 3.30910.0)
++  - nanopb/decode (3.30910.0)
++  - nanopb/encode (3.30910.0)
++  - package_info_plus (0.4.5):
++    - Flutter
++  - permission_handler_apple (9.4.8):
++    - Flutter
++  - print_bluetooth_thermal (0.0.1):
++    - Flutter
++  - printing (1.0.0):
++    - Flutter
++  - PromisesObjC (2.4.1)
++  - PromisesSwift (2.4.1):
++    - PromisesObjC (= 2.4.1)
++  - RecaptchaInterop (101.0.0)
++  - share_plus (0.0.1):
++    - Flutter
++  - shared_preferences_foundation (0.0.1):
++    - Flutter
++    - FlutterMacOS
++  - sign_in_with_apple (0.0.1):
++    - Flutter
++  - sqflite_darwin (0.0.4):
++    - Flutter
++    - FlutterMacOS
++  - url_launcher_ios (0.0.1):
++    - Flutter
+ 
+ DEPENDENCIES:
++  - app_links (from `.symlinks/plugins/app_links/ios`)
++  - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/darwin`)
++  - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
++  - file_picker (from `.symlinks/plugins/file_picker/darwin`)
++  - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
++  - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
+   - Flutter (from `Flutter`)
++  - flutter_contacts (from `.symlinks/plugins/flutter_contacts/ios`)
++  - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
++  - flutter_secure_storage_darwin (from `.symlinks/plugins/flutter_secure_storage_darwin/darwin`)
++  - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/darwin`)
++  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
++  - in_app_purchase_storekit (from `.symlinks/plugins/in_app_purchase_storekit/darwin`)
++  - mobile_scanner (from `.symlinks/plugins/mobile_scanner/darwin`)
++  - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
++  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
++  - print_bluetooth_thermal (from `.symlinks/plugins/print_bluetooth_thermal/ios`)
++  - printing (from `.symlinks/plugins/printing/ios`)
++  - share_plus (from `.symlinks/plugins/share_plus/ios`)
++  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
++  - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
++  - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
++  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
++
++SPEC REPOS:
++  trunk:
++    - AppAuth
++    - AppCheckCore
++    - Firebase
++    - FirebaseCore
++    - FirebaseCoreInternal
++    - FirebaseInstallations
++    - FirebaseMessaging
++    - GoogleDataTransport
++    - GoogleSignIn
++    - GoogleUtilities
++    - GTMAppAuth
++    - GTMSessionFetcher
++    - nanopb
++    - PromisesObjC
++    - PromisesSwift
++    - RecaptchaInterop
+ 
+ EXTERNAL SOURCES:
++  app_links:
++    :path: ".symlinks/plugins/app_links/ios"
++  audioplayers_darwin:
++    :path: ".symlinks/plugins/audioplayers_darwin/darwin"
++  device_info_plus:
++    :path: ".symlinks/plugins/device_info_plus/ios"
++  file_picker:
++    :path: ".symlinks/plugins/file_picker/darwin"
++  firebase_core:
++    :path: ".symlinks/plugins/firebase_core/ios"
++  firebase_messaging:
++    :path: ".symlinks/plugins/firebase_messaging/ios"
+   Flutter:
+     :path: Flutter
++  flutter_contacts:
++    :path: ".symlinks/plugins/flutter_contacts/ios"
++  flutter_local_notifications:
++    :path: ".symlinks/plugins/flutter_local_notifications/ios"
++  flutter_secure_storage_darwin:
++    :path: ".symlinks/plugins/flutter_secure_storage_darwin/darwin"
++  google_sign_in_ios:
++    :path: ".symlinks/plugins/google_sign_in_ios/darwin"
++  image_picker_ios:
++    :path: ".symlinks/plugins/image_picker_ios/ios"
++  in_app_purchase_storekit:
++    :path: ".symlinks/plugins/in_app_purchase_storekit/darwin"
++  mobile_scanner:
++    :path: ".symlinks/plugins/mobile_scanner/darwin"
++  package_info_plus:
++    :path: ".symlinks/plugins/package_info_plus/ios"
++  permission_handler_apple:
++    :path: ".symlinks/plugins/permission_handler_apple/ios"
++  print_bluetooth_thermal:
++    :path: ".symlinks/plugins/print_bluetooth_thermal/ios"
++  printing:
++    :path: ".symlinks/plugins/printing/ios"
++  share_plus:
++    :path: ".symlinks/plugins/share_plus/ios"
++  shared_preferences_foundation:
++    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
++  sign_in_with_apple:
++    :path: ".symlinks/plugins/sign_in_with_apple/ios"
++  sqflite_darwin:
++    :path: ".symlinks/plugins/sqflite_darwin/darwin"
++  url_launcher_ios:
++    :path: ".symlinks/plugins/url_launcher_ios/ios"
+ 
+ SPEC CHECKSUMS:
++  app_links: a754cbec3c255bd4bbb4d236ecc06f28cd9a7ce8
++  AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
++  AppCheckCore: e215d35177a9cf469927863e69c13e220df32a8b
++  audioplayers_darwin: 835ced6edd4c9fc8ebb0a7cc9e294a91d99917d5
++  device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
++  file_picker: 70164d9778c42c47218d6cd79ce435de0856b11a
++  Firebase: a8539b633d474fbeb654c7043f9c1649e274045b
++  firebase_core: fc23178af8ea070194d09031ae4198a9608a3d22
++  firebase_messaging: 870b2939a7f7cc52bc38ca0250127c45b42f4bad
++  FirebaseCore: 2e86a4ea1684d4381707069e4a6d89ac808e901e
++  FirebaseCoreInternal: 6ab6a02c94446c026d2cf35cf5383842ebaa4992
++  FirebaseInstallations: eb29ccbf64eaedf86fd5b2ccc7fabde567660b52
++  FirebaseMessaging: 40017d7bc8457ee295b0f41d480a80fdabc9994e
+   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
++  flutter_contacts: 2ec1d6b62ca2869c3bbb3871bd74d4e3ef157135
++  flutter_local_notifications: 643a3eda1ce1c0599413ca31672536d423dee214
++  flutter_secure_storage_darwin: acdb3f316ed05a3e68f856e0353b133eec373a23
++  google_sign_in_ios: b48bb9af78576358a168361173155596c845f0b9
++  GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
++  GoogleSignIn: ce8c89bb9b37fb624b92e7514cc67335d1e277e4
++  GoogleUtilities: 766ace00c6b10d8148408f329d10c4f051931850
++  GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
++  GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
++  image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
++  in_app_purchase_storekit: 22cca7d08eebca9babdf4d07d0baccb73325d3c8
++  mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
++  nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
++  package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
++  permission_handler_apple: 92d754bbaa7361d436db2d6c3c1c2a0fdcec462e
++  print_bluetooth_thermal: f66600ca96dedaac545ad09204a9061f944c0989
++  printing: 54ff03f28fe9ba3aa93358afb80a8595a071dd07
++  PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
++  PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
++  RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
++  share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
++  shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
++  sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
++  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
++  url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
+ 
+ PODFILE CHECKSUM: 80d06b157d09fe1fdb5bfd3594f313c673d74272
+ 
+diff --git a/ios/Runner/Runner.entitlements b/ios/Runner/Runner.entitlements
+index 903def2..80b5221 100644
+--- a/ios/Runner/Runner.entitlements
++++ b/ios/Runner/Runner.entitlements
+@@ -4,5 +4,9 @@
+ <dict>
+ 	<key>aps-environment</key>
+ 	<string>development</string>
++	<key>com.apple.developer.applesignin</key>
++	<array>
++		<string>Default</string>
++	</array>
+ </dict>
+ </plist>
+diff --git a/lib/core/utils/app_image_cache.dart b/lib/core/utils/app_image_cache.dart
+index 87a463d..d1b110b 100644
+--- a/lib/core/utils/app_image_cache.dart
++++ b/lib/core/utils/app_image_cache.dart
+@@ -93,6 +93,14 @@ class AppImageCache {
+     );
+   }
+ 
++  static Future<void> precacheAuthAssets(BuildContext context) async {
++    // Intentionally left empty to avoid asset not found exceptions
++  }
++
++  static Future<void> precacheHeaderBrandAsset(BuildContext context) async {
++    // Intentionally left empty to avoid asset not found exceptions
++  }
++
+   static void _runAfterFirstFrame(VoidCallback callback) {
+     SchedulerBinding.instance.addPostFrameCallback((_) => callback());
+   }
+diff --git a/lib/core/utils/image_picker_helper.dart b/lib/core/utils/image_picker_helper.dart
+index 7ac949e..014f6ef 100644
+--- a/lib/core/utils/image_picker_helper.dart
++++ b/lib/core/utils/image_picker_helper.dart
+@@ -73,7 +73,7 @@ class ImagePickerHelper {
+       }
+ 
+       // Use file_picker instead of image_picker
+-      final result = await FilePicker.platform.pickFiles(
++      final result = await FilePicker.pickFiles(
+         type: FileType.image,
+         allowMultiple: false,
+       );
+@@ -142,7 +142,7 @@ class ImagePickerHelper {
+         debugPrint('Image picker failed, trying alternative: $e');
+ 
+         // Fallback: Use file_picker with camera
+-        final result = await FilePicker.platform.pickFiles(
++        final result = await FilePicker.pickFiles(
+           type: FileType.image,
+           allowMultiple: false,
+         );
+diff --git a/lib/providers/auth_provider.dart b/lib/providers/auth_provider.dart
+index 9c8d208..96d2b92 100644
+--- a/lib/providers/auth_provider.dart
++++ b/lib/providers/auth_provider.dart
+@@ -2,6 +2,7 @@ import 'dart:convert';
+ import 'package:flutter/material.dart';
+ import 'package:google_sign_in/google_sign_in.dart';
+ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
++import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+ import '../core/service/fcm_service.dart';
+ import '../core/utils/api_client.dart';
+ import '../core/utils/auth_storage.dart';
+@@ -366,6 +367,115 @@ class AuthProvider extends ChangeNotifier {
+     }
+   }
+ 
++  Future<Map<String, dynamic>> signInWithApple({
++    bool rememberMe = false,
++  }) async {
++    _isLoading = true;
++    notifyListeners();
++    try {
++      final credential = await SignInWithApple.getAppleIDCredential(
++        scopes: [
++          AppleIDAuthorizationScopes.email,
++          AppleIDAuthorizationScopes.fullName,
++        ],
++      );
++
++      if (credential.identityToken == null) {
++        _isLoading = false;
++        notifyListeners();
++        return {
++          'success': false,
++          'message': 'Apple tidak mengirimkan token identitas.',
++        };
++      }
++
++      String fullName = '';
++      if (credential.givenName != null || credential.familyName != null) {
++        fullName = '${credential.givenName ?? ''} ${credential.familyName ?? ''}'.trim();
++      }
++
++      final response = await ApiClient.post(
++        '/auth/apple',
++        body: {
++          'idToken': credential.identityToken,
++          'email': credential.email ?? '',
++          'name': fullName,
++        },
++      );
++      final responseBody = jsonDecode(response.body);
++      _isLoading = false;
++      notifyListeners();
++
++      if (response.statusCode == 200) {
++        final data = responseBody['data'] ?? {};
++        if (data['is_registered'] == false) {
++          return {
++            'success': true,
++            'is_registered': false,
++            'apple_data': {
++              'email': data['email'] ?? '',
++              'name': data['name'] ?? '',
++              'apple_id': data['apple_id'] ?? '',
++              'registration_token': data['registration_token'] ?? '',
++            },
++          };
++        }
++
++        final accessToken = data['access_token']?.toString() ?? "";
++        await syncAccessToken(accessToken);
++
++        await _storage.write(
++          key: 'actor_id',
++          value: data['actor_id']?.toString() ?? "",
++        );
++
++        final String? lastOutlet = data['last_outlet_id'] ?? data['outlet_id'];
++        await _storage.write(key: 'outlet_id', value: lastOutlet ?? "");
++        await _storage.write(key: 'current_outlet_id', value: lastOutlet ?? "");
++        await _storage.write(key: 'remember_me', value: rememberMe.toString());
++
++        final String type = data['actor_type'] ?? 'user';
++        final userData = data['user'];
++        final String roleName = userData['role_name'] ?? 'Owner';
++
++        _userName = userData['usr_nama'] ?? userData['nama'] ?? 'User';
++        _userRole = roleName;
++
++        await _setSessionData(data['permissions'], type, roleName);
++        await _storage.write(key: 'user_name', value: _userName!);
++
++        return {
++          'success': true,
++          'is_registered': true,
++          'has_outlet': data['has_outlet'] ?? false,
++        };
++      }
++      return {
++        'success': false,
++        'message': responseBody['message'] ?? 'Gagal verifikasi Apple',
++      };
++    } catch (e) {
++      debugPrint("Apple SignIn Error: $e");
++      _isLoading = false;
++      notifyListeners();
++      
++      bool isCanceled = false;
++      if (e is SignInWithAppleAuthorizationException) {
++        if (e.code == AuthorizationErrorCode.canceled) {
++          isCanceled = true;
++        }
++      }
++
++      return {
++        'success': false,
++        'is_canceled': isCanceled,
++        'message': isCanceled 
++            ? 'Login Apple dibatalkan.' 
++            : 'Gagal login menggunakan Apple: ${e.toString()}',
++      };
++    }
++  }
++
+   Future<void> logout() async {
+     await FCMService.unregisterTokenFromBackend(authTokenOverride: _token);
+ 
+@@ -521,7 +631,11 @@ class AuthProvider extends ChangeNotifier {
+       _isLoading = false;
+       notifyListeners();
+       if (response.statusCode == 200) {
+-        return {'success': true, 'message': data['message']};
++        return {
++          'success': true, 
++          'message': data['message'],
++          'verification_token': data['data']?['verification_token'],
++        };
+       }
+       return {
+         'success': false,
+@@ -780,4 +894,32 @@ class AuthProvider extends ChangeNotifier {
+       notifyListeners();
+     }
+   }
++  Future<Map<String, dynamic>> deleteAccount({
++    required String reason,
++    String? reasonDetail,
++  }) async {
++    _isLoading = true;
++    notifyListeners();
++    try {
++      final response = await ApiClient.delete(
++        '/auth/delete-account',
++        token: _token,
++        body: {
++          'reason': reason,
++          'reason_detail': reasonDetail ?? 'Tanpa penjelasan tambahan',
++        },
++      );
++      if (response.statusCode == 200 || response.statusCode == 201) {
++        await logout(); // re-use logout logic
++        return {'success': true, 'message': 'Akun berhasil dihapus'};
++      }
++      return {'success': false, 'message': 'Gagal menghapus akun'};
++    } catch (e) {
++      debugPrint('Error deleting account: $e');
++      return {'success': false, 'message': 'Terjadi kesalahan sistem'};
++    } finally {
++      _isLoading = false;
++      notifyListeners();
++    }
++  }
+ }
+diff --git a/lib/providers/koin_provider.dart b/lib/providers/koin_provider.dart
+index 68b9f8b..4370f22 100644
+--- a/lib/providers/koin_provider.dart
++++ b/lib/providers/koin_provider.dart
+@@ -42,6 +42,7 @@ class KoinProvider with ChangeNotifier {
+   double get activationDiscount => _activationDiscount;
+   double get totalAktivasiPRO =>
+       _activationFee - (_activationFee * _activationDiscount / 100);
++  bool get isActivationFree => totalAktivasiPRO <= 0;
+ 
+   List<Map<String, dynamic>> _koinPackages = [];
+   List<Map<String, dynamic>> get koinPackages => _koinPackages;
+diff --git a/lib/providers/permission_provider.dart b/lib/providers/permission_provider.dart
+index 5d23bbd..316dc84 100644
+--- a/lib/providers/permission_provider.dart
++++ b/lib/providers/permission_provider.dart
+@@ -702,7 +702,9 @@ class PermissionProvider extends ChangeNotifier {
+ 
+         bytes.addAll([0x1D, 0x21, sizeToUse]); // double height (atau double w+h di 88mm)
+         bytes.addAll([0x1B, 0x45, 0x01]); // bold on
++        bytes.addAll([0x1B, 0x47, 0x01]); // double strike on
+         bytes.addAll(_safeUtf8Encode('$printLine\n'));
++        bytes.addAll([0x1B, 0x47, 0x00]); // double strike off
+         bytes.addAll([0x1B, 0x45, 0x00]); // bold off
+         bytes.addAll([0x1D, 0x21, 0x00]); // normal size
+         bytes.addAll([0x1B, 0x61, 0x00]); // back to left
+@@ -728,7 +730,7 @@ class PermissionProvider extends ChangeNotifier {
+     final List<int> bytes = [];
+     final qrData = _safeUtf8Encode(data);
+     final int dataLength = qrData.length + 3;
+-    final int qrModuleSize = paperWidth >= 80 ? 8 : 6;
++    final int qrModuleSize = paperWidth >= 80 ? 6 : 4; // Reduced from 8 and 6
+     final int pL = dataLength % 256;
+     final int pH = dataLength ~/ 256;
+ 
+diff --git a/lib/providers/register_provider.dart b/lib/providers/register_provider.dart
+index 550a397..5a7f374 100644
+--- a/lib/providers/register_provider.dart
++++ b/lib/providers/register_provider.dart
+@@ -28,6 +28,11 @@ class RegisterProvider extends ChangeNotifier {
+   bool isGoogleLogin = false;
+   String? googleId;
+   String? googleRegistrationToken;
++
++  bool isAppleLogin = false;
++  String? appleId;
++  String? appleRegistrationToken;
++
+   String? otpVerificationToken;
+ 
+   void reset() {
+@@ -51,6 +56,9 @@ class RegisterProvider extends ChangeNotifier {
+     isGoogleLogin = false;
+     googleId = null;
+     googleRegistrationToken = null;
++    isAppleLogin = false;
++    appleId = null;
++    appleRegistrationToken = null;
+     otpVerificationToken = null;
+ 
+     notifyListeners();
+@@ -64,6 +72,22 @@ class RegisterProvider extends ChangeNotifier {
+       googleRegistrationToken = data['registration_token'];
+       otpVerificationToken = null;
+       isGoogleLogin = true;
++      isAppleLogin = false;
++      notifyListeners();
++    }
++  }
++
++  void initAppleData(Map<String, dynamic>? data) {
++    if (data != null) {
++      if ((data['name'] ?? '').isNotEmpty) {
++        nameController.text = data['name'];
++      }
++      emailController.text = data['email'] ?? '';
++      appleId = data['apple_id'];
++      appleRegistrationToken = data['registration_token'];
++      otpVerificationToken = null;
++      isAppleLogin = true;
++      isGoogleLogin = false;
+       notifyListeners();
+     }
+   }
+@@ -118,6 +142,8 @@ class RegisterProvider extends ChangeNotifier {
+       'nomor_hp': phoneController.text.trim(),
+       'google_id': googleId,
+       'google_registration_token': googleRegistrationToken,
++      'apple_id': appleId,
++      'apple_registration_token': appleRegistrationToken,
+       'otp_verification_token': otpVerificationToken,
+       'referral_code': referralController.text.trim(),
+       'lead_source': selectedLeadSource,
+diff --git a/lib/screens/auth/login_screen.dart b/lib/screens/auth/login_screen.dart
+index a1dda61..54a5106 100644
+--- a/lib/screens/auth/login_screen.dart
++++ b/lib/screens/auth/login_screen.dart
+@@ -4,6 +4,7 @@ import 'package:ayocucinew/providers/app_provider.dart';
+ import 'package:ayocucinew/providers/register_provider.dart';
+ import 'package:ayocucinew/screens/auth/forgot_password_screen.dart';
+ import 'package:flutter/material.dart';
++import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+ import 'package:ayocucinew/shared/widgets/app_shimmer.dart';
+ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+ import 'package:provider/provider.dart';
+@@ -147,6 +148,52 @@ class _LoginScreenState extends State<LoginScreen> {
+     }
+   }
+ 
++  void _handleAppleLogin() async {
++    final auth = context.read<AuthProvider>();
++    final regProv = context.read<RegisterProvider>();
++    final appProv = context.read<AppProvider>();
++
++    if (_rememberMe) {
++      await _storage.write(key: 'remember_me', value: 'true');
++    } else {
++      await _storage.write(key: 'remember_me', value: 'false');
++    }
++
++    final result = await auth.signInWithApple(rememberMe: _rememberMe);
++
++    if (result['success']) {
++      if (result['is_registered'] == false) {
++        if (!mounted) return;
++        regProv.initAppleData(result['apple_data']);
++        Navigator.pushNamed(context, '/register');
++        CustomToast.show(context, message: "Silakan lengkapi pendaftaran Anda");
++      } else {
++        if (result['has_outlet'] == true) {
++          await appProv.fetchAppData(force: true);
++          if (!mounted) return;
++          final String? outletId = appProv.outlet?.id.toString();
++          if (outletId != null) appProv.initRealtime(outletId);
++        }
++
++        if (mounted) {
++          if (result['has_outlet'] == true) {
++            Navigator.pushReplacementNamed(context, '/home');
++          } else {
++            Navigator.pushReplacementNamed(context, '/setup-outlet');
++          }
++          CustomToast.show(context, message: "Login Apple Berhasil");
++        }
++      }
++    } else if (result['is_canceled'] != true) {
++      if (!mounted) return;
++      CustomToast.show(
++        context,
++        message: result['message'] ?? 'Apple Login Gagal',
++        isError: true,
++      );
++    }
++  }
++
+   @override
+   Widget build(BuildContext context) {
+     final auth = context.watch<AuthProvider>();
+@@ -171,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
+                       const SizedBox(height: 40),
+                       Image.asset(
+                         'assets/icons/logo/logo login screen.png',
+-                        height: isTablet ? 90 : 70,
++                        height: isTablet ? 60 : 45,
+                       ),
+                       const Text(
+                         'Welcome',
+@@ -340,6 +387,35 @@ class _LoginScreenState extends State<LoginScreen> {
+           ],
+         ),
+       ),
++      if (Theme.of(context).platform == TargetPlatform.iOS) ...[
++        const SizedBox(height: 12),
++        OutlinedButton(
++          onPressed: auth.isLoading ? null : _handleAppleLogin,
++          style: OutlinedButton.styleFrom(
++            backgroundColor: Colors.black,
++            side: BorderSide.none,
++            minimumSize: const Size(double.infinity, 50),
++            shape: RoundedRectangleBorder(
++              borderRadius: BorderRadius.circular(25),
++            ),
++            elevation: 0,
++          ),
++          child: const Row(
++            mainAxisAlignment: MainAxisAlignment.center,
++            children: [
++              Icon(Icons.apple, color: Colors.white, size: 24),
++              SizedBox(width: 10),
++              Text(
++                'Masuk dengan Apple',
++                style: TextStyle(
++                  color: Colors.white,
++                  fontWeight: FontWeight.normal,
++                ),
++              ),
++            ],
++          ),
++        ),
++      ],
+     ],
+   );
+ 
+diff --git a/lib/screens/auth/onboarding_screen.dart b/lib/screens/auth/onboarding_screen.dart
+index f712d51..7573131 100644
+--- a/lib/screens/auth/onboarding_screen.dart
++++ b/lib/screens/auth/onboarding_screen.dart
+@@ -19,19 +19,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
+ 
+   static const List<_OnboardingStep> _steps = [
+     _OnboardingStep(
+-      icon: Icons.storefront_rounded,
+-      title: 'Operasional laundry dalam satu genggaman',
++      title: 'Bisnis Terus Tumbuh',
+       body:
+-          'Kelola outlet, pelanggan, layanan, transaksi, dan laporan harian dari satu aplikasi.',
++          'Pantau omset, transaksi, dan performa layanan melalui laporan yang jelas untuk membantu mengambil keputusan lebih baik.',
+     ),
+     _OnboardingStep(
+-      icon: Icons.receipt_long_rounded,
+-      title: 'Pantau pesanan lebih rapi',
++      title: 'Jangan Sampai Terlewat',
+       body:
+-          'Ikuti status cucian, pembayaran, dan aktivitas outlet tanpa harus bolak-balik catatan manual.',
++          'Dapatkan informasi status cucian secara langsung untuk membantu tim bekerja lebih cepat dan tepat waktu.',
+     ),
+     _OnboardingStep(
+-      icon: Icons.notifications_active_rounded,
+       title: 'Aktifkan notifikasi penting',
+       body:
+           'Dapatkan pengingat transaksi, update status, dan info outlet tepat waktu.',
+@@ -85,194 +82,263 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
+     await _finish();
+   }
+ 
++  Widget _buildIllustration(int index) {
++    if (index == 0) {
++      return Stack(
++        alignment: Alignment.center,
++        clipBehavior: Clip.none,
++        children: [
++          Positioned(
++            left: 0,
++            top: 20,
++            child: Image.asset(
++              'assets/onboarding/1/image 272.png',
++              width: 260,
++              fit: BoxFit.contain,
++            ),
++          ),
++          Positioned(
++            right: 10,
++            bottom: -10,
++            child: Image.asset(
++              'assets/onboarding/1/2 12.png',
++              height: 230,
++              fit: BoxFit.contain,
++            ),
++          ),
++          Positioned(
++            left: 30,
++            bottom: 30,
++            child: Image.asset(
++              'assets/onboarding/1/image 303.png',
++              height: 110,
++              fit: BoxFit.contain,
++            ),
++          ),
++        ],
++      );
++    } else if (index == 1) {
++      return Stack(
++        alignment: Alignment.center,
++        clipBehavior: Clip.none,
++        children: [
++          Positioned(
++            top: 0,
++            child: Image.asset(
++              'assets/onboarding/2/Frame 3588.png',
++              height: 250,
++              fit: BoxFit.contain,
++            ),
++          ),
++          Positioned(
++            bottom: -30,
++            child: Image.asset(
++              'assets/onboarding/2/4 2.png',
++              height: 180,
++              fit: BoxFit.contain,
++            ),
++          ),
++        ],
++      );
++    } else {
++      return Stack(
++        alignment: Alignment.center,
++        clipBehavior: Clip.none,
++        children: [
++          Positioned(
++            right: 0,
++            top: 20,
++            child: Image.asset(
++              'assets/onboarding/3/image 300.png',
++              height: 200,
++              fit: BoxFit.contain,
++            ),
++          ),
++          Positioned(
++            left: 20,
++            bottom: -10,
++            child: Image.asset(
++              'assets/onboarding/3/1 502.png',
++              height: 240,
++              fit: BoxFit.contain,
++            ),
++          ),
++        ],
++      );
++    }
++  }
++
+   @override
+   Widget build(BuildContext context) {
+     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+ 
+     return Scaffold(
+       backgroundColor: Colors.white,
+-      body: SafeArea(
+-        child: Column(
+-          children: [
+-            Padding(
+-              padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
+-              child: Row(
+-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+-                children: [
+-                  Image.asset(
+-                    'assets/icons/ic_logo.webp',
+-                    height: 34,
+-                    errorBuilder: (context, error, stackTrace) => const Icon(
+-                      Icons.local_laundry_service_rounded,
+-                      color: AppPalette.primary,
++      body: Container(
++        decoration: const BoxDecoration(
++          gradient: LinearGradient(
++            begin: Alignment.topCenter,
++            end: Alignment.bottomCenter,
++            colors: [Color(0xFFFFF0ED), Colors.white],
++            stops: [0.0, 0.4],
++          ),
++        ),
++        child: SafeArea(
++          child: Column(
++            children: [
++              Padding(
++                padding: const EdgeInsets.fromLTRB(24, 16, 24, 10),
++                child: Row(
++                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
++                  children: [
++                    Image.asset(
++                      'assets/icons/logo/logo_login_screen.webp',
++                      height: 24,
++                      errorBuilder: (context, error, stackTrace) => const Text(
++                        'ayocuci',
++                        style: TextStyle(
++                          color: AppPalette.primary,
++                          fontSize: 20,
++                          fontWeight: FontWeight.bold,
++                        ),
++                      ),
+                     ),
+-                  ),
+-                  TextButton(
+-                    onPressed: _isRequestingPermission ? null : _skip,
+-                    style: TextButton.styleFrom(
+-                      foregroundColor: Colors.black54,
+-                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
++                    TextButton(
++                      onPressed: _isRequestingPermission ? null : _skip,
++                      style: TextButton.styleFrom(
++                        foregroundColor: Colors.black54,
++                        textStyle: const TextStyle(fontWeight: FontWeight.w600),
++                        padding: EdgeInsets.zero,
++                        minimumSize: const Size(0, 0),
++                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
++                      ),
++                      child: const Text('Lewati'),
++                    ),
++                  ],
++                ),
++              ),
++              Padding(
++                padding: const EdgeInsets.symmetric(horizontal: 24.0),
++                child: Row(
++                  children: List.generate(
++                    _steps.length,
++                    (index) => Expanded(
++                      child: Container(
++                        height: 4,
++                        margin: const EdgeInsets.only(right: 6),
++                        decoration: BoxDecoration(
++                          color: index <= _index
++                              ? AppPalette.primary
++                              : const Color(0xFFFFD8CD),
++                          borderRadius: BorderRadius.circular(2),
++                        ),
++                      ),
+                     ),
+-                    child: const Text('Lewati'),
+                   ),
+-                ],
++                ),
+               ),
+-            ),
+-            Expanded(
+-              child: PageView.builder(
+-                controller: _controller,
+-                itemCount: _steps.length,
+-                onPageChanged: (value) => setState(() => _index = value),
+-                itemBuilder: (context, index) {
+-                  final step = _steps[index];
+-                  return Padding(
+-                    padding: const EdgeInsets.symmetric(horizontal: 28),
+-                    child: Column(
+-                      mainAxisAlignment: MainAxisAlignment.center,
++              Expanded(
++                child: PageView.builder(
++                  controller: _controller,
++                  itemCount: _steps.length,
++                  onPageChanged: (value) => setState(() => _index = value),
++                  itemBuilder: (context, index) {
++                    final step = _steps[index];
++                    return Column(
++                      mainAxisAlignment: MainAxisAlignment.end,
+                       children: [
+-                        _FeatureOrb(icon: step.icon),
+-                        const SizedBox(height: 34),
+-                        Text(
+-                          step.title,
+-                          textAlign: TextAlign.center,
+-                          style: const TextStyle(
+-                            fontSize: 28,
+-                            height: 1.12,
+-                            fontWeight: FontWeight.w800,
+-                            color: Color(0xFF202124),
++                        Expanded(
++                          child: Center(
++                            child: SizedBox(
++                              width: 320,
++                              height: 300,
++                              child: _buildIllustration(index),
++                            ),
+                           ),
+                         ),
+-                        const SizedBox(height: 14),
+-                        Text(
+-                          step.body,
+-                          textAlign: TextAlign.center,
+-                          style: const TextStyle(
+-                            fontSize: 15,
+-                            height: 1.45,
+-                            color: Color(0xFF626771),
+-                            fontWeight: FontWeight.w500,
++                        Padding(
++                          padding: const EdgeInsets.symmetric(horizontal: 28),
++                          child: Column(
++                            children: [
++                              Text(
++                                step.title,
++                                textAlign: TextAlign.center,
++                                style: const TextStyle(
++                                  fontSize: 24,
++                                  height: 1.2,
++                                  fontWeight: FontWeight.w800,
++                                  color: Color(0xFF202124),
++                                ),
++                              ),
++                              const SizedBox(height: 12),
++                              Text(
++                                step.body,
++                                textAlign: TextAlign.center,
++                                style: const TextStyle(
++                                  fontSize: 14,
++                                  height: 1.5,
++                                  color: Color(0xFF626771),
++                                  fontWeight: FontWeight.w500,
++                                ),
++                              ),
++                              const SizedBox(height: 40),
++                            ],
+                           ),
+                         ),
+                       ],
+-                    ),
+-                  );
+-                },
++                    );
++                  },
++                ),
+               ),
+-            ),
+-            Padding(
+-              padding: EdgeInsets.fromLTRB(24, 0, 24, 20 + bottomInset),
+-              child: Column(
+-                mainAxisSize: MainAxisSize.min,
+-                children: [
+-                  Row(
+-                    mainAxisAlignment: MainAxisAlignment.center,
+-                    children: List.generate(
+-                      _steps.length,
+-                      (index) => AnimatedContainer(
+-                        duration: const Duration(milliseconds: 220),
+-                        margin: const EdgeInsets.symmetric(horizontal: 4),
+-                        width: _index == index ? 24 : 8,
+-                        height: 8,
+-                        decoration: BoxDecoration(
+-                          color: _index == index
+-                              ? AppPalette.primary
+-                              : const Color(0xFFE5E7EB),
+-                          borderRadius: BorderRadius.circular(999),
+-                        ),
++              Padding(
++                padding: EdgeInsets.fromLTRB(24, 0, 24, 20 + bottomInset),
++                child: SizedBox(
++                  width: double.infinity,
++                  height: 54,
++                  child: ElevatedButton(
++                    onPressed: _isRequestingPermission ? null : _next,
++                    style: ElevatedButton.styleFrom(
++                      backgroundColor: AppPalette.primary,
++                      foregroundColor: Colors.white,
++                      elevation: 0,
++                      shape: RoundedRectangleBorder(
++                        borderRadius: BorderRadius.circular(27),
+                       ),
+                     ),
+-                  ),
+-                  const SizedBox(height: 22),
+-                  SizedBox(
+-                    width: double.infinity,
+-                    height: 54,
+-                    child: ElevatedButton(
+-                      onPressed: _isRequestingPermission ? null : _next,
+-                      style: ElevatedButton.styleFrom(
+-                        backgroundColor: AppPalette.primary,
+-                        foregroundColor: Colors.white,
+-                        elevation: 0,
+-                        shape: RoundedRectangleBorder(
+-                          borderRadius: BorderRadius.circular(27),
+-                        ),
+-                      ),
+-                      child: _isRequestingPermission
+-                          ? const SizedBox(
+-                              width: 22,
+-                              height: 22,
+-                              child: CircularProgressIndicator(
+-                                strokeWidth: 2.4,
+-                                color: Colors.white,
+-                              ),
+-                            )
+-                          : Text(
+-                              _isLastStep ? 'Aktifkan notifikasi' : 'Lanjut',
+-                              style: const TextStyle(
+-                                fontSize: 15,
+-                                fontWeight: FontWeight.w800,
+-                              ),
++                    child: _isRequestingPermission
++                        ? const SizedBox(
++                            width: 22,
++                            height: 22,
++                            child: CircularProgressIndicator(
++                              strokeWidth: 2.4,
++                              color: Colors.white,
+                             ),
+-                    ),
++                          )
++                        : Text(
++                            _isLastStep ? 'Aktifkan Notifikasi' : 'Selanjutnya',
++                            style: const TextStyle(
++                              fontSize: 16,
++                              fontWeight: FontWeight.w700,
++                            ),
++                          ),
+                   ),
+-                  if (_isLastStep) ...[
+-                    const SizedBox(height: 12),
+-                    TextButton(
+-                      onPressed: _isRequestingPermission ? null : _skip,
+-                      style: TextButton.styleFrom(
+-                        foregroundColor: Colors.black54,
+-                        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+-                      ),
+-                      child: const Text('Nanti saja'),
+-                    ),
+-                  ],
+-                ],
++                ),
+               ),
+-            ),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-}
+-
+-class _FeatureOrb extends StatelessWidget {
+-  const _FeatureOrb({required this.icon});
+-
+-  final IconData icon;
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    return Container(
+-      width: 164,
+-      height: 164,
+-      decoration: const BoxDecoration(
+-        shape: BoxShape.circle,
+-        gradient: LinearGradient(
+-          begin: Alignment.topLeft,
+-          end: Alignment.bottomRight,
+-          colors: [Color(0xFFFF6A3D), Color(0xFFFF3D1F)],
+-        ),
+-        boxShadow: [
+-          BoxShadow(
+-            color: Color(0x33FF4D2E),
+-            blurRadius: 36,
+-            offset: Offset(0, 18),
++            ],
+           ),
+-        ],
++        ),
+       ),
+-      child: Icon(icon, color: Colors.white, size: 72),
+     );
+   }
+ }
+ 
+ class _OnboardingStep {
+   const _OnboardingStep({
+-    required this.icon,
+     required this.title,
+     required this.body,
+   });
+ 
+-  final IconData icon;
+   final String title;
+   final String body;
+ }
++
+diff --git a/lib/screens/auth/register_master_screen.dart b/lib/screens/auth/register_master_screen.dart
+index 8430860..b79de9c 100644
+--- a/lib/screens/auth/register_master_screen.dart
++++ b/lib/screens/auth/register_master_screen.dart
+@@ -6,7 +6,6 @@ import 'package:ayocucinew/screens/auth/steps/step_password.dart';
+ import 'package:ayocucinew/screens/auth/steps/step_phone.dart';
+ import 'package:ayocucinew/shared/widgets/custom_toast.dart';
+ import 'steps/step_account.dart';
+-import 'steps/step_otp.dart';
+ import 'package:ayocucinew/core/theme/app_palette.dart';
+ 
+ class RegisterMasterScreen extends StatefulWidget {
+@@ -23,24 +22,16 @@ class _RegisterMasterScreenState extends State<RegisterMasterScreen> {
+   void _nextPage() => setState(() => _currentStep++);
+   void _prevPage() => setState(() => _currentStep--);
+ 
+-  bool _usesOtpFlow(RegisterProvider regProv) => !regProv.isGoogleLogin;
++  bool _isSocialLogin(RegisterProvider regProv) => regProv.isGoogleLogin || regProv.isAppleLogin;
+ 
+-  int _maxStep(RegisterProvider regProv) => _usesOtpFlow(regProv) ? 4 : 3;
++  int _maxStep(RegisterProvider regProv) => 3; // 4 steps in total: 0, 1, 2, 3
+ 
+   int _mapDisplayStepToCurrentStep(RegisterProvider regProv, int targetStep) {
+-    if (_usesOtpFlow(regProv)) {
+-      return switch (targetStep) {
+-        0 => 0,
+-        2 => 2,
+-        4 => 4,
+-        _ => targetStep,
+-      };
+-    }
+-
++    // Target Step from Header Pill: 0 (Phone), 1 (Account/Data), 3 (Password/Security)
+     return switch (targetStep) {
+       0 => 0,
+-      2 => 1,
+-      4 => 3,
++      1 => 1,
++      3 => 3,
+       _ => targetStep,
+     };
+   }
+@@ -109,26 +100,14 @@ class _RegisterMasterScreenState extends State<RegisterMasterScreen> {
+   }
+ 
+   Widget _buildCurrentStep() {
+-    final regProv = context.watch<RegisterProvider>();
+     switch (_currentStep) {
+       case 0:
+         return StepPhone(onNext: _nextPage);
+       case 1:
+-        if (regProv.isGoogleLogin) {
+-          return StepAccount(onNext: _nextPage, onBack: _prevPage);
+-        }
+-        return StepOtp(onNext: _nextPage, onBack: _prevPage);
+-      case 2:
+-        if (regProv.isGoogleLogin) {
+-          return StepOutlet(onNext: _nextPage, onBack: _prevPage);
+-        }
+         return StepAccount(onNext: _nextPage, onBack: _prevPage);
+-      case 3:
+-        if (regProv.isGoogleLogin) {
+-          return StepPassword(onBack: _prevPage);
+-        }
++      case 2:
+         return StepOutlet(onNext: _nextPage, onBack: _prevPage);
+-      case 4:
++      case 3:
+         return StepPassword(onBack: _prevPage);
+       default:
+         return const SizedBox();
+@@ -136,13 +115,9 @@ class _RegisterMasterScreenState extends State<RegisterMasterScreen> {
+   }
+ 
+   Widget _buildStepperHeader() {
+-    final regProv = context.watch<RegisterProvider>();
+-    final usesOtpFlow = _usesOtpFlow(regProv);
+-    final verifyActive = usesOtpFlow ? _currentStep <= 1 : _currentStep == 0;
+-    final dataStepActive = usesOtpFlow
+-        ? _currentStep == 2 || _currentStep == 3
+-        : _currentStep == 1 || _currentStep == 2;
+-    final securityActive = usesOtpFlow ? _currentStep == 4 : _currentStep == 3;
++    final verifyActive = _currentStep == 0;
++    final dataStepActive = _currentStep == 1 || _currentStep == 2;
++    final securityActive = _currentStep == 3;
+ 
+     return Padding(
+       padding: const EdgeInsets.symmetric(horizontal: 20),
+@@ -155,8 +130,8 @@ class _RegisterMasterScreenState extends State<RegisterMasterScreen> {
+         child: Row(
+           children: [
+             _stepPill(1, 'Verifikasi', verifyActive, () => _jumpToStep(0)),
+-            _stepPill(2, 'Data Anda', dataStepActive, () => _jumpToStep(2)),
+-            _stepPill(3, 'Keamanan', securityActive, () => _jumpToStep(4)),
++            _stepPill(2, 'Data Anda', dataStepActive, () => _jumpToStep(1)),
++            _stepPill(3, 'Keamanan', securityActive, () => _jumpToStep(3)),
+           ],
+         ),
+       ),
+@@ -235,47 +210,35 @@ class _RegisterMasterScreenState extends State<RegisterMasterScreen> {
+ 
+   Widget _buildDynamicWelcomeText() {
+     final regProv = context.watch<RegisterProvider>();
+-    final lastStep = _maxStep(regProv);
++    final isSocial = _isSocialLogin(regProv);
++    
+     String title = '';
+     String subtitle = '';
++    
+     switch (_currentStep) {
+       case 0:
+-        if (regProv.isGoogleLogin) {
++        if (isSocial) {
+           title = 'Nomor owner dulu';
+           subtitle = 'Kami tetap butuh nomor HP aktif sebagai identitas akun.';
+-          break;
++        } else {
++          title = 'Selamat datang di ayo cuci!';
++          subtitle = 'Terima kasih sudah mendownload aplikasi ayo cuci.';
+         }
+-        title = 'Selamat datang di ayo cuci!';
+-        subtitle = 'Terima kasih sudah mendownload aplikasi ayo cuci.';
+         break;
+       case 1:
+-        if (regProv.isGoogleLogin) {
++        if (isSocial) {
++          title = 'Lengkapi Data Diri';
++          subtitle = 'Gunakan data asli untuk memudahkan koordinasi.';
++        } else {
+           title = 'Lengkapi Data Diri';
+           subtitle = 'Gunakan data asli untuk memudahkan koordinasi.';
+-          break;
+         }
+-        title = 'Selamat datang di ayo cuci!';
+-        subtitle = 'Terima kasih sudah mendownload aplikasi ayo cuci.';
+         break;
+       case 2:
+-        if (regProv.isGoogleLogin) {
+-          title = 'Pendaftaran anda hampir selesai';
+-          subtitle = 'Mari isi data outlet anda dibawah ini';
+-          break;
+-        }
+-        title = 'Lengkapi Data Diri';
+-        subtitle = 'Gunakan data asli untuk memudahkan koordinasi.';
+-        break;
+-      case 3:
+-        if (lastStep == 3) {
+-          title = 'Tinggal satu step lagi';
+-          subtitle = 'Ayo selesaikan pendaftaran anda';
+-          break;
+-        }
+         title = 'Pendaftaran anda hampir selesai';
+         subtitle = 'Mari isi data outlet anda dibawah ini';
+         break;
+-      case 4:
++      case 3:
+         title = 'Tinggal satu step lagi';
+         subtitle = 'Ayo selesaikan pendaftaran anda';
+         break;
+diff --git a/lib/screens/auth/steps/step_password.dart b/lib/screens/auth/steps/step_password.dart
+index 9561379..0244754 100644
+--- a/lib/screens/auth/steps/step_password.dart
++++ b/lib/screens/auth/steps/step_password.dart
+@@ -12,6 +12,7 @@ import '../../../providers/register_provider.dart';
+ import '../../../shared/widgets/custom_textfield.dart';
+ import '../../../shared/widgets/custom_toast.dart';
+ import 'package:ayocucinew/core/theme/app_palette.dart';
++import '../widgets/registration_success_screen.dart';
+ 
+ class StepPassword extends StatefulWidget {
+   final VoidCallback onBack;
+@@ -91,9 +92,19 @@ class _StepPasswordState extends State<StepPassword> {
+         regProv.reset();
+         CustomToast.show(
+           context,
+-          message: "Pendaftaran Berhasil! Silakan Login.",
++          message: "Pendaftaran Berhasil!",
++        );
++        Navigator.pushAndRemoveUntil(
++          context,
++          MaterialPageRoute(
++            builder: (_) => RegistrationSuccessScreen(
++              onPrimary: () {
++                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
++              },
++            ),
++          ),
++          (route) => false,
+         );
+-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+       } else {
+         CustomToast.show(
+           context,
+diff --git a/lib/screens/auth/steps/step_phone.dart b/lib/screens/auth/steps/step_phone.dart
+index 221cbca..5d453e7 100644
+--- a/lib/screens/auth/steps/step_phone.dart
++++ b/lib/screens/auth/steps/step_phone.dart
+@@ -60,24 +60,16 @@ class _StepPhoneState extends State<StepPhone> {
+     final auth = context.read<AuthProvider>();
+ 
+     try {
+-      // Cek apakah nomor sudah terdaftar
+-      final checkRes = await auth.checkPhone(phone);
+-      if (!mounted) return;
+-      if (!checkRes['success']) {
+-        CustomToast.show(context, message: checkRes['message'], isError: true);
+-        return;
+-      }
+-
+-      if (isGoogleLogin) {
+-        regProv.setOtpVerificationToken(null);
+-        widget.onNext();
+-        return;
+-      }
+-
+-      // Kirim OTP
++      // Validasi nomor WhatsApp via Foonte (Bypass OTP)
++      // Endpoint ini juga akan mengecek apakah nomor sudah terdaftar
+       final otpRes = await auth.sendOtp(phone);
+       if (!mounted) return;
++      
+       if (otpRes['success']) {
++        final token = otpRes['verification_token'];
++        if (token != null) {
++          regProv.setOtpVerificationToken(token);
++        }
+         widget.onNext();
+       } else {
+         CustomToast.show(context, message: otpRes['message'], isError: true);
+@@ -215,7 +207,7 @@ class _StepPhoneState extends State<StepPhone> {
+                             ),
+                           )
+                         : Text(
+-                            regProv.isGoogleLogin ? 'LANJUTKAN' : 'KIRIM OTP',
++                            (regProv.isGoogleLogin || regProv.isAppleLogin) ? 'LANJUTKAN' : 'LANJUTKAN',
+                             style: TextStyle(
+                               color: Colors.white,
+                               fontWeight: FontWeight.bold,
+diff --git a/lib/screens/home/widgets/info_slider.dart b/lib/screens/home/widgets/info_slider.dart
+index b312b69..c61d7a2 100644
+--- a/lib/screens/home/widgets/info_slider.dart
++++ b/lib/screens/home/widgets/info_slider.dart
+@@ -61,7 +61,7 @@ class _InfoContentSlider extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final sliderHeight = _sliderHeightForItems(items);
++    final sliderHeight = _sliderHeightForItems(context, items);
+ 
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+@@ -163,12 +163,12 @@ class _InfoContentSlider extends StatelessWidget {
+                       ),
+                       Expanded(
+                         child: Padding(
+-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
++                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                           child: Align(
+                             alignment: Alignment.centerLeft,
+                             child: Text(
+                               item.title,
+-                              maxLines: 2,
++                              maxLines: 1,
+                               overflow: TextOverflow.ellipsis,
+                               style: const TextStyle(
+                                 color: Color(0xFF1F2A37),
+@@ -213,8 +213,11 @@ class _InfoContentSlider extends StatelessWidget {
+     return ApiClient.resolveImageVariantUrl(path, width: 720);
+   }
+ 
+-  double _sliderHeightForItems(List<ContentBannerModel> items) {
+-    final needsTwoLines = items.any((item) => item.title.trim().length > 34);
+-    return needsTwoLines ? 286 : 268;
++  double _sliderHeightForItems(BuildContext context, List<ContentBannerModel> items) {
++    final screenWidth = MediaQuery.of(context).size.width;
++    final imageWidth = screenWidth - 40; // 20 margin on each side
++    final imageHeight = imageWidth * (9 / 16);
++    const textAreaHeight = 44.0; // 10 top + 10 bottom padding + 20 text height (16 * 1.25) + 4 extra just in case
++    return imageHeight + textAreaHeight;
+   }
+ }
+diff --git a/lib/screens/home/widgets/promo_slider.dart b/lib/screens/home/widgets/promo_slider.dart
+index 5f7825a..4230150 100644
+--- a/lib/screens/home/widgets/promo_slider.dart
++++ b/lib/screens/home/widgets/promo_slider.dart
+@@ -82,7 +82,7 @@ class _ContentSlider extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    final sliderHeight = _sliderHeightForItems(items);
++    final sliderHeight = _sliderHeightForItems(context, items);
+ 
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+@@ -184,12 +184,12 @@ class _ContentSlider extends StatelessWidget {
+                       ),
+                       Expanded(
+                         child: Padding(
+-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
++                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                           child: Align(
+                             alignment: Alignment.centerLeft,
+                             child: Text(
+                               item.title,
+-                              maxLines: 2,
++                              maxLines: 1,
+                               overflow: TextOverflow.ellipsis,
+                               style: const TextStyle(
+                                 color: Color(0xFF1F2A37),
+@@ -234,8 +234,11 @@ class _ContentSlider extends StatelessWidget {
+     return ApiClient.resolveImageVariantUrl(path, width: 720);
+   }
+ 
+-  double _sliderHeightForItems(List<ContentBannerModel> items) {
+-    final needsTwoLines = items.any((item) => item.title.trim().length > 34);
+-    return needsTwoLines ? 286 : 268;
++  double _sliderHeightForItems(BuildContext context, List<ContentBannerModel> items) {
++    final screenWidth = MediaQuery.of(context).size.width;
++    final imageWidth = screenWidth - 40; // 20 margin on each side
++    final imageHeight = imageWidth * (9 / 16);
++    const textAreaHeight = 44.0; // 10 top + 10 bottom padding + 20 text height (16 * 1.25) + 4 extra just in case
++    return imageHeight + textAreaHeight;
+   }
+ }
+diff --git a/lib/screens/settings/printer/kelolah_permission.dart b/lib/screens/settings/printer/kelolah_permission.dart
+index 6ebf12e..dd5ba2e 100644
+--- a/lib/screens/settings/printer/kelolah_permission.dart
++++ b/lib/screens/settings/printer/kelolah_permission.dart
+@@ -140,7 +140,7 @@ class _PermissionPageContentState extends State<_PermissionPageContent> {
+             padding: const EdgeInsets.all(20),
+             child: Column(
+               children: [
+-                if (isIosUnsupported)
++                if (Theme.of(context).platform == TargetPlatform.android)
+                   Container(
+                     width: double.infinity,
+                     margin: const EdgeInsets.only(bottom: 16),
+@@ -153,12 +153,46 @@ class _PermissionPageContentState extends State<_PermissionPageContent> {
+                     child: const Row(
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: [
+-                        Icon(Icons.info_outline, color: Colors.amber, size: 18),
++                        Icon(Icons.android, color: Colors.amber, size: 18),
+                         SizedBox(width: 10),
+                         Expanded(
+                           child: Text(
+-                            'Bluetooth printer belum tersedia di iOS. Gunakan fitur printer pada perangkat Android untuk pairing dan test print.',
+-                            style: TextStyle(fontSize: 13, height: 1.4),
++                            'Android: pair dulu di Bluetooth Settings, lalu scan.',
++                            style: TextStyle(
++                              fontSize: 13,
++                              height: 1.4,
++                              fontWeight: FontWeight.bold,
++                              color: Colors.black87,
++                            ),
++                          ),
++                        ),
++                      ],
++                    ),
++                  )
++                else if (Theme.of(context).platform == TargetPlatform.iOS)
++                  Container(
++                    width: double.infinity,
++                    margin: const EdgeInsets.only(bottom: 16),
++                    padding: const EdgeInsets.all(14),
++                    decoration: BoxDecoration(
++                      color: Colors.blue.withValues(alpha: 0.12),
++                      borderRadius: BorderRadius.circular(12),
++                      border: Border.all(color: Colors.blue.shade200),
++                    ),
++                    child: const Row(
++                      crossAxisAlignment: CrossAxisAlignment.start,
++                      children: [
++                        Icon(Icons.phone_iphone, color: Colors.blue, size: 18),
++                        SizedBox(width: 10),
++                        Expanded(
++                          child: Text(
++                            'iPhone: pilih printer dari app.',
++                            style: TextStyle(
++                              fontSize: 13,
++                              height: 1.4,
++                              fontWeight: FontWeight.bold,
++                              color: Colors.black87,
++                            ),
+                           ),
+                         ),
+                       ],
+@@ -194,15 +228,16 @@ class _PermissionPageContentState extends State<_PermissionPageContent> {
+                             provider.permissions['Bluetooth Scan'] ==
+                             'Tidak Diizinkan',
+                       ),
+-                      _buildDivider(),
+-                      _buildPermissionItem(
+-                        'Fine Location',
+-                        provider.permissions['Fine Location']!,
+-                        isRed:
+-                            provider.permissions['Fine Location'] ==
+-                            'Tidak Diizinkan',
+-                      ),
+-                      _buildDivider(),
++                      if (Theme.of(context).platform == TargetPlatform.android) ...[
++                        _buildPermissionItem(
++                          'Fine Location',
++                          provider.permissions['Fine Location'] ?? 'Tidak Tersedia',
++                          isRed:
++                              provider.permissions['Fine Location'] ==
++                              'Tidak Diizinkan',
++                        ),
++                        _buildDivider(),
++                      ],
+                       _buildPermissionItem(
+                         'Status Koneksi',
+                         provider.isConnected
+@@ -217,28 +252,33 @@ class _PermissionPageContentState extends State<_PermissionPageContent> {
+                 const SizedBox(height: 20),
+ 
+                 // Button Minta Izin
+-                SizedBox(
+-                  width: double.infinity,
+-                  child: ElevatedButton(
+-                    onPressed: isIosUnsupported ? null : _handleRequestPermission,
+-                    style: ElevatedButton.styleFrom(
+-                      backgroundColor: const Color(0xFFE85C40),
+-                      padding: const EdgeInsets.symmetric(vertical: 16),
+-                      shape: RoundedRectangleBorder(
+-                        borderRadius: BorderRadius.circular(8),
++                if (provider.permissions['Bluetooth Connection'] == 'Tidak Diizinkan' ||
++                    provider.permissions['Bluetooth Scan'] == 'Tidak Diizinkan' ||
++                    (Theme.of(context).platform == TargetPlatform.android &&
++                     provider.permissions['Fine Location'] == 'Tidak Diizinkan')) ...[
++                  SizedBox(
++                    width: double.infinity,
++                    child: ElevatedButton(
++                      onPressed: isIosUnsupported ? null : _handleRequestPermission,
++                      style: ElevatedButton.styleFrom(
++                        backgroundColor: const Color(0xFFE85C40),
++                        padding: const EdgeInsets.symmetric(vertical: 16),
++                        shape: RoundedRectangleBorder(
++                          borderRadius: BorderRadius.circular(8),
++                        ),
++                        elevation: 0,
+                       ),
+-                      elevation: 0,
+-                    ),
+-                    child: const Text(
+-                      'Minta Izin Bluetooth',
+-                      style: TextStyle(
+-                        color: Colors.white,
+-                        fontSize: 15,
++                      child: const Text(
++                        'Minta Izin Bluetooth',
++                        style: TextStyle(
++                          color: Colors.white,
++                          fontSize: 15,
++                        ),
+                       ),
+                     ),
+                   ),
+-                ),
+-                const SizedBox(height: 12),
++                  const SizedBox(height: 12),
++                ],
+ 
+                 // Button Scan
+                 SizedBox(
+@@ -268,7 +308,7 @@ class _PermissionPageContentState extends State<_PermissionPageContent> {
+                         : Text(
+                             isIosUnsupported
+                                 ? 'Tidak Tersedia di iOS'
+-                                : 'Scan Perangkat Paired',
++                                : 'Scan Printer',
+                             style: const TextStyle(
+                               color: Colors.white,
+                               fontSize: 15,
+@@ -327,40 +367,8 @@ class _PermissionPageContentState extends State<_PermissionPageContent> {
+                   ),
+                 const SizedBox(height: 20),
+ 
+-                // Device List
+                 Expanded(
+-                  child: isIosUnsupported
+-                      ? Center(
+-                          child: Column(
+-                            mainAxisAlignment: MainAxisAlignment.center,
+-                            children: [
+-                              Icon(
+-                                Icons.bluetooth_disabled,
+-                                size: 64,
+-                                color: Colors.grey[400],
+-                              ),
+-                              const SizedBox(height: 16),
+-                              Text(
+-                                'Bluetooth printer belum didukung di iOS',
+-                                style: TextStyle(
+-                                  color: Colors.grey[600],
+-                                  fontSize: 16,
+-                                ),
+-                                textAlign: TextAlign.center,
+-                              ),
+-                              const SizedBox(height: 8),
+-                              Text(
+-                                'Silakan lakukan pairing printer di perangkat Android.',
+-                                textAlign: TextAlign.center,
+-                                style: TextStyle(
+-                                  color: Colors.grey[500],
+-                                  fontSize: 14,
+-                                ),
+-                              ),
+-                            ],
+-                          ),
+-                        )
+-                      : provider.foundDevices.isEmpty
++                  child: provider.foundDevices.isEmpty
+                       ? Center(
+                           child: Column(
+                             mainAxisAlignment: MainAxisAlignment.center,
+diff --git a/lib/shared/widgets/nota_preview_widget.dart b/lib/shared/widgets/nota_preview_widget.dart
+index f3ce891..54df6ea 100644
+--- a/lib/shared/widgets/nota_preview_widget.dart
++++ b/lib/shared/widgets/nota_preview_widget.dart
+@@ -3,6 +3,7 @@ import 'package:ayocucinew/data/models/setting_nota_model.dart';
+ import 'package:ayocucinew/core/utils/api_client.dart';
+ import 'package:ayocucinew/shared/widgets/app_cached_network_image.dart';
+ import 'package:ayocucinew/shared/widgets/currency_formatter.dart';
++import 'package:ayocucinew/shared/widgets/dashed_divider.dart';
+ import 'package:flutter/material.dart';
+ import 'package:intl/intl.dart';
+ import 'package:ayocucinew/core/theme/app_palette.dart';
+@@ -29,14 +30,12 @@ class NotaPreviewWidget extends StatelessWidget {
+     final outletAddress = nota?.cnAlamat ?? '';
+     final kontak = nota?.cnKontak ?? '';
+ 
+-    // ── Kode transaksi ──
+     final trxCode =
+         snapshot['tr_id']?.toString() ??
+         snapshot['tr_code']?.toString() ??
+         snapshot['transaction_code']?.toString() ??
+         '-';
+ 
+-    // ── Info dasar ──
+     final customerName =
+         customer?.name ??
+         snapshot['customer_name']?.toString() ??
+@@ -54,7 +53,6 @@ class NotaPreviewWidget extends StatelessWidget {
+     final catatan =
+         snapshot['catatan']?.toString() ?? snapshot['notes']?.toString() ?? '';
+ 
+-    // ── Parfum (sinkron dengan nota_text_builder) ──
+     final parfumNama = () {
+       final direct = snapshot['parfum_nama']?.toString() ?? '';
+       if (direct.isNotEmpty && direct != '-') return direct;
+@@ -71,7 +69,6 @@ class NotaPreviewWidget extends StatelessWidget {
+       return '';
+     }();
+ 
+-    // ── Angka keuangan ──
+     final grandTotal = _toDouble(
+       snapshot['tr_total'] ??
+           snapshot['grand_total'] ??
+@@ -97,7 +94,6 @@ class NotaPreviewWidget extends StatelessWidget {
+           (nominalDP > 0 ? grandTotal - nominalDP : 0.0),
+     );
+ 
+-    // ── Jemput & Antar ──
+     final jemputAlamat = (snapshot['jemput_alamat'] ?? '').toString().trim();
+     final antarAlamat = (snapshot['antar_alamat'] ?? '').toString().trim();
+     final jemputBiaya = _toDouble(snapshot['jemput_biaya']);
+@@ -107,7 +103,6 @@ class NotaPreviewWidget extends StatelessWidget {
+     final hasAntar = antarAlamat.isNotEmpty;
+     final details = snapshot['details'] as List? ?? [];
+ 
+-    // ── SubTotal: prioritas details.fold (sinkron dengan nota_text_builder) ──
+     final totalOrder = () {
+       if (details.isNotEmpty) {
+         final fromDetails = details.fold<double>(
+@@ -126,7 +121,6 @@ class NotaPreviewWidget extends StatelessWidget {
+         if (val > 0) return val;
+       }
+ 
+-      // 3. Fallback: dari total_kotor
+       final rawTotalKotor = _toDouble(
+         snapshot['total_kotor'] ??
+             snapshot['subtotal_kotor'] ??
+@@ -142,7 +136,6 @@ class NotaPreviewWidget extends StatelessWidget {
+       );
+     }();
+ 
+-    // ── Status pembayaran ──
+     final paymentStatusText =
+         snapshot['tr_status_pembayaran']?.toString() ??
+         snapshot['payment_status']?.toString() ??
+@@ -153,7 +146,6 @@ class NotaPreviewWidget extends StatelessWidget {
+     final isBelumLunasWithoutDP = !isLunas && nominalDP <= 0;
+     final isDPBelumLunas = !isLunas && nominalDP > 0;
+ 
+-    // ── Status order ──
+     final orderStatusText =
+         snapshot['tr_status']?.toString() ??
+         snapshot['tr_status_order']?.toString() ??
+@@ -173,7 +165,6 @@ class NotaPreviewWidget extends StatelessWidget {
+         orderStatus == 'finish' ||
+         orderStatus == 'finished';
+ 
+-    // ── Status banner (prioritas selesai > status bayar) ──
+     final statusBayarLabel = isLunas
+         ? 'LUNAS'
+         : isBelumLunasWithoutDP
+@@ -187,7 +178,6 @@ class NotaPreviewWidget extends StatelessWidget {
+         ? Colors.green
+         : Colors.red;
+ 
+-    // ── Tanggal ──
+     DateTime createdAt;
+     try {
+       final raw = snapshot['tr_created'] ?? snapshot['created_at'];
+@@ -210,290 +200,312 @@ class NotaPreviewWidget extends StatelessWidget {
+       } catch (_) {}
+     }
+ 
+-    // ── Optional items (sinkron dengan nota_text_builder) ──
+     final optionalItems = snapshot['optional_items'];
+     final hasOptionalItems = optionalItems is List && optionalItems.isNotEmpty;
+ 
+-    // ── Footer ──
+     final footer =
+         (nota?.cnSettNota == true && (nota?.cnFooterNota ?? '').isNotEmpty)
+         ? nota!.cnFooterNota
+         : 'Harap membawa bon ini ketika mengambil pakaian';
+ 
+-    return Material(
+-      color: Colors.white,
+-      child: SizedBox(
+-        width: 380,
+-        child: Padding(
+-          padding: const EdgeInsets.all(20),
+-          child: Column(
+-            crossAxisAlignment: CrossAxisAlignment.start,
+-            mainAxisSize: MainAxisSize.min,
+-            children: [
+-              // ── Logo outlet ──
+-              if (nota?.cnSettLogo == true)
+-                Padding(
+-                  padding: const EdgeInsets.only(bottom: 10),
+-                  child: Center(
+-                    child: Container(
+-                      width: 56,
+-                      height: 56,
+-                      decoration: BoxDecoration(
+-                        color: Colors.grey.shade200,
+-                        borderRadius: BorderRadius.circular(10),
++    return Container(
++      width: 380,
++      margin: const EdgeInsets.symmetric(vertical: 16),
++      decoration: BoxDecoration(
++        color: Colors.white,
++        borderRadius: BorderRadius.circular(16),
++        boxShadow: [
++          BoxShadow(
++            color: Colors.black.withOpacity(0.05),
++            blurRadius: 20,
++            offset: const Offset(0, 8),
++          ),
++        ],
++      ),
++      child: ClipRRect(
++        borderRadius: BorderRadius.circular(16),
++        child: Column(
++          crossAxisAlignment: CrossAxisAlignment.start,
++          mainAxisSize: MainAxisSize.min,
++          children: [
++            // Top Accent Bar
++            Container(
++              height: 6,
++              width: double.infinity,
++              color: AppPalette.primary,
++            ),
++            Padding(
++              padding: const EdgeInsets.all(24),
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                mainAxisSize: MainAxisSize.min,
++                children: [
++                  // ── Logo outlet ──
++                  if (nota?.cnSettLogo == true)
++                    Padding(
++                      padding: const EdgeInsets.only(bottom: 16),
++                      child: Center(
++                        child: Container(
++                          width: 64,
++                          height: 64,
++                          decoration: BoxDecoration(
++                            color: Colors.grey.shade50,
++                            shape: BoxShape.circle,
++                            border: Border.all(color: Colors.grey.shade200, width: 2),
++                          ),
++                          clipBehavior: Clip.antiAlias,
++                          child: imageUrl != null
++                              ? AppCachedNetworkImage(
++                                  imageUrl: imageUrl,
++                                  fit: BoxFit.cover,
++                                  errorWidget: const Icon(
++                                    Icons.store,
++                                    size: 34,
++                                    color: Colors.grey,
++                                  ),
++                                )
++                              : const Icon(
++                                  Icons.store,
++                                  size: 34,
++                                  color: Colors.grey,
++                                ),
++                        ),
+                       ),
+-                      clipBehavior: Clip.antiAlias,
+-                      child: imageUrl != null
+-                          ? AppCachedNetworkImage(
+-                              imageUrl: imageUrl,
+-                              fit: BoxFit.cover,
+-                              errorWidget: const Icon(
+-                                Icons.store,
+-                                size: 34,
+-                                color: Colors.grey,
+-                              ),
+-                            )
+-                          : const Icon(
+-                              Icons.store,
+-                              size: 34,
+-                              color: Colors.grey,
+-                            ),
+                     ),
+-                  ),
+-                ),
+-
+-              // ── Header teks outlet ──
+-              Center(
+-                child: Text(
+-                  outletName,
+-                  style: const TextStyle(
+-                    fontSize: 16,
+-                    fontWeight: FontWeight.bold,
+-                  ),
+-                ),
+-              ),
+-              if (outletAddress.isNotEmpty)
+-                Center(
+-                  child: Text(
+-                    outletAddress,
+-                    style: const TextStyle(fontSize: 12),
+-                    textAlign: TextAlign.center,
+-                  ),
+-                ),
+-              if (kontak.isNotEmpty)
+-                Center(
+-                  child: Text(kontak, style: const TextStyle(fontSize: 12)),
+-                ),
+-              const SizedBox(height: 4),
+-              Center(
+-                child: Text(
+-                  trxCode,
+-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+-                ),
+-              ),
+-              const Divider(height: 16),
+-
+-              // ── Pelanggan (di text builder posisinya tepat setelah header/divider pertama) ──
+-              _row('Pelanggan', customerName, bold: true),
+-              const Divider(height: 12),
+-
+-              // ── Info transaksi ──
+-              if (showKasir) _row('Kasir', kasir),
+-              _row('Tgl Masuk', dateFormat.format(createdAt)),
+-              _row('Est Selesai', estDate),
+-
+-              // ── Parfum ──
+-              if (parfumNama.isNotEmpty) _row('Parfum', parfumNama),
+-
+-              // ── Status cucian & bayar ──
+-              if (orderStatusText.isNotEmpty && orderStatusText != '-')
+-                _row('Status Cucian', orderStatusText.toUpperCase()),
+-              _row('Status Bayar', paymentStatusText.toUpperCase()),
+-
+-              // ── Alamat jemput & antar (tanpa section label, langsung inline — sinkron text builder) ──
+-              if (hasJemput) _rowWrapValue('Alamat Jemput', jemputAlamat),
+-              if (hasAntar) _rowWrapValue('Alamat Antar', antarAlamat),
+-
+-              // ── Catatan ──
+-              if (showKeterangan && catatan.isNotEmpty)
+-                _row('Catatan', catatan),
+-
+-              const Divider(height: 16),
+-
+-              // ── Detail pesanan ──
+-              const _SectionLabel('DETAIL PESANAN:'),
+-              const SizedBox(height: 6),
+-
+-              ...details.map((d) => _DetailItem(d: d)),
+-
+-              // ── Optional items (sinkron dengan nota_text_builder) ──
+-              if (hasOptionalItems) ...[
+-                const Divider(height: 12),
+-                const _SectionLabel('ITEM DICUCI:'),
+-                const SizedBox(height: 4),
+-                _OptionalItemsWidget(rawItems: optionalItems),
+-              ],
+-
+-              const Divider(height: 16),
+-
+-              // ── Kalkulasi harga (urutan & logika sinkron dengan nota_text_builder) ──
+-              _row('SubTotal', CurrencyFormatter.formatToRupiah(totalOrder)),
+-
+-              // Biaya jemput & antar terpisah
+-              if (jemputBiaya > 0)
+-                _row('Jemput', CurrencyFormatter.formatToRupiah(jemputBiaya)),
+-              if (antarBiaya > 0)
+-                _row('Antar', CurrencyFormatter.formatToRupiah(antarBiaya)),
+-              // Total gabungan jika keduanya ada
+-              if (jemputBiaya > 0 && antarBiaya > 0)
+-                _row(
+-                  'Tot. J+A',
+-                  CurrencyFormatter.formatToRupiah(totalJemputAntar),
+-                ),
+-
+-              if (discount > 0)
+-                _row(
+-                  'Diskon',
+-                  '-${CurrencyFormatter.formatToRupiah(discount)}',
+-                ),
+-
+-              if (roundingAmount != 0)
+-                _row(
+-                  'Pembulatan',
+-                  '${roundingAmount > 0 ? '+' : '-'}${CurrencyFormatter.formatToRupiah(roundingAmount.abs())}',
+-                ),
+-
+-              if (isLunas && cashAmount > 0)
+-                _row('Cash', CurrencyFormatter.formatToRupiah(cashAmount)),
+-
+-              _row(
+-                'Total',
+-                CurrencyFormatter.formatToRupiah(grandTotal),
+-                bold: true,
+-              ),
+-
+-              if (isDPBelumLunas) ...[
+-                _row('DP Dibayar', CurrencyFormatter.formatToRupiah(nominalDP)),
+-              ],
+-
+-              if (isBelumLunasWithoutDP)
+-                _row(
+-                  'Sisa Bayar',
+-                  CurrencyFormatter.formatToRupiah(grandTotal),
+-                ),
+-
+-              const SizedBox(height: 12),
+-
+-              // ── Status banner ──
+-              Container(
+-                width: double.infinity,
+-                padding: const EdgeInsets.symmetric(vertical: 8),
+-                decoration: BoxDecoration(
+-                  color: statusColor.withValues(alpha: 0.1),
+-                  borderRadius: BorderRadius.circular(8),
+-                  border: Border.all(color: statusColor),
+-                ),
+-                child: Column(
+-                  children: [
+-                    Text(
+-                      statusLabel,
+-                      style: TextStyle(
+-                        fontWeight: FontWeight.bold,
+-                        color: statusColor,
+-                        fontSize: 14,
++                  
++                  // ── Header teks outlet ──
++                  Center(
++                    child: Text(
++                      outletName,
++                      style: const TextStyle(
++                        fontSize: 18,
++                        fontWeight: FontWeight.w800,
++                        letterSpacing: 0.5,
+                       ),
+                     ),
+-                    if (isSelesai) ...[
+-                      const SizedBox(height: 2),
+-                      Text(
+-                        'SIAP DIAMBIL',
+-                        style: TextStyle(
+-                          fontWeight: FontWeight.w600,
+-                          color: statusColor,
+-                          fontSize: 12,
++                  ),
++                  if (outletAddress.isNotEmpty)
++                    Padding(
++                      padding: const EdgeInsets.only(top: 4),
++                      child: Center(
++                        child: Text(
++                          outletAddress,
++                          style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
++                          textAlign: TextAlign.center,
+                         ),
+                       ),
+-                    ],
++                    ),
++                  if (kontak.isNotEmpty)
++                    Padding(
++                      padding: const EdgeInsets.only(top: 2),
++                      child: Center(
++                        child: Text(kontak, style: TextStyle(fontSize: 12, color: Colors.grey.shade700)),
++                      ),
++                    ),
++                  const SizedBox(height: 12),
++                  Center(
++                    child: Container(
++                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
++                      decoration: BoxDecoration(
++                        color: Colors.grey.shade100,
++                        borderRadius: BorderRadius.circular(20),
++                      ),
++                      child: Text(
++                        trxCode,
++                        style: TextStyle(fontSize: 12, color: Colors.grey.shade800, fontWeight: FontWeight.w600),
++                      ),
++                    ),
++                  ),
++                  const SizedBox(height: 20),
++                  DashedDivider(color: Colors.grey.shade300),
++                  const SizedBox(height: 20),
++
++                  // ── Pelanggan ──
++                  _row('Pelanggan', customerName, bold: true),
++                  const SizedBox(height: 12),
++
++                  // ── Info transaksi ──
++                  if (showKasir) _row('Kasir', kasir),
++                  _row('Tgl Masuk', dateFormat.format(createdAt)),
++                  _row('Est Selesai', estDate),
++                  if (parfumNama.isNotEmpty) _row('Parfum', parfumNama),
++                  if (orderStatusText.isNotEmpty && orderStatusText != '-')
++                    _row('Status Cucian', orderStatusText.toUpperCase(), valueColor: AppPalette.primary),
++                  _row('Status Bayar', paymentStatusText.toUpperCase(), bold: true, valueColor: isLunas ? Colors.green : Colors.red),
++
++                  if (hasJemput) _rowWrapValue('Alamat Jemput', jemputAlamat),
++                  if (hasAntar) _rowWrapValue('Alamat Antar', antarAlamat),
++                  if (showKeterangan && catatan.isNotEmpty) _row('Catatan', catatan),
++
++                  const SizedBox(height: 20),
++                  DashedDivider(color: Colors.grey.shade300),
++                  const SizedBox(height: 20),
++
++                  // ── Detail pesanan ──
++                  const _SectionLabel('DETAIL PESANAN'),
++                  const SizedBox(height: 12),
++
++                  ...details.map((d) => _DetailItem(d: d)),
++
++                  if (hasOptionalItems) ...[
++                    const SizedBox(height: 12),
++                    const _SectionLabel('ITEM DICUCI'),
++                    const SizedBox(height: 8),
++                    _OptionalItemsWidget(rawItems: optionalItems),
+                   ],
+-                ),
+-              ),
+ 
+-              // ── Sisa Bayar (sinkron: muncul di bawah status banner, sama seperti ~~Sisa Bayar di text builder) ──
+-              if (isDPBelumLunas || isBelumLunasWithoutDP) ...[
+-                const SizedBox(height: 8),
+-                Container(
+-                  width: double.infinity,
+-                  padding: const EdgeInsets.symmetric(
+-                    vertical: 8,
+-                    horizontal: 12,
+-                  ),
+-                  decoration: BoxDecoration(
+-                    color: Colors.red.shade50,
+-                    borderRadius: BorderRadius.circular(8),
+-                    border: Border.all(color: Colors.red.shade300),
+-                  ),
+-                  child: Row(
++                  const SizedBox(height: 20),
++                  DashedDivider(color: Colors.grey.shade300),
++                  const SizedBox(height: 20),
++
++                  // ── Kalkulasi harga ──
++                  _row('SubTotal', CurrencyFormatter.formatToRupiah(totalOrder)),
++                  if (jemputBiaya > 0) _row('Jemput', CurrencyFormatter.formatToRupiah(jemputBiaya)),
++                  if (antarBiaya > 0) _row('Antar', CurrencyFormatter.formatToRupiah(antarBiaya)),
++                  if (jemputBiaya > 0 && antarBiaya > 0)
++                    _row('Tot. J+A', CurrencyFormatter.formatToRupiah(totalJemputAntar)),
++                  if (discount > 0)
++                    _row('Diskon', '-${CurrencyFormatter.formatToRupiah(discount)}', valueColor: Colors.green),
++                  if (roundingAmount != 0)
++                    _row(
++                      'Pembulatan',
++                      '${roundingAmount > 0 ? '+' : '-'}${CurrencyFormatter.formatToRupiah(roundingAmount.abs())}',
++                    ),
++                  if (isLunas && cashAmount > 0)
++                    _row('Cash', CurrencyFormatter.formatToRupiah(cashAmount)),
++                  
++                  const SizedBox(height: 8),
++                  Row(
+                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                     children: [
+                       const Text(
+-                        'Sisa Bayar',
+-                        style: TextStyle(
+-                          fontWeight: FontWeight.bold,
+-                          fontSize: 13,
+-                          color: Colors.red,
+-                        ),
++                        'Total',
++                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                       ),
+                       Text(
+-                        CurrencyFormatter.formatToRupiah(
+-                          isDPBelumLunas ? sisaBayar : grandTotal,
+-                        ),
+-                        style: const TextStyle(
+-                          fontWeight: FontWeight.bold,
+-                          fontSize: 13,
+-                          color: Colors.red,
+-                        ),
++                        CurrencyFormatter.formatToRupiah(grandTotal),
++                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppPalette.primary),
+                       ),
+                     ],
+                   ),
+-                ),
+-              ],
+-
+-              const SizedBox(height: 12),
+-
+-              // ── Footer ──
+-              Center(
+-                child: Text(
+-                  footer,
+-                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+-                  textAlign: TextAlign.center,
+-                ),
+-              ),
+ 
+-              const SizedBox(height: 16),
+-              const Divider(height: 1),
+-              const SizedBox(height: 8),
++                  if (isDPBelumLunas) ...[
++                    const SizedBox(height: 4),
++                    _row('DP Dibayar', CurrencyFormatter.formatToRupiah(nominalDP)),
++                  ],
+ 
+-              Center(
+-                child: RichText(
+-                  text: const TextSpan(
+-                    style: TextStyle(fontSize: 11, color: Colors.grey),
+-                    children: [
+-                      TextSpan(text: 'Powered by '),
+-                      TextSpan(
+-                        text: 'AyoCuci POS',
+-                        style: TextStyle(
+-                          color: AppPalette.primary,
+-                          fontWeight: FontWeight.bold,
++                  const SizedBox(height: 24),
++
++                  // ── Status banner ──
++                  Container(
++                    width: double.infinity,
++                    padding: const EdgeInsets.symmetric(vertical: 12),
++                    decoration: BoxDecoration(
++                      color: statusColor.withOpacity(0.1),
++                      borderRadius: BorderRadius.circular(12),
++                      border: Border.all(color: statusColor.withOpacity(0.5)),
++                    ),
++                    child: Column(
++                      children: [
++                        Text(
++                          statusLabel,
++                          style: TextStyle(
++                            fontWeight: FontWeight.w800,
++                            color: statusColor,
++                            fontSize: 16,
++                            letterSpacing: 0.5,
++                          ),
+                         ),
++                        if (isSelesai) ...[
++                          const SizedBox(height: 4),
++                          Text(
++                            'SIAP DIAMBIL',
++                            style: TextStyle(
++                              fontWeight: FontWeight.w600,
++                              color: statusColor,
++                              fontSize: 12,
++                            ),
++                          ),
++                        ],
++                      ],
++                    ),
++                  ),
++
++                  if (isDPBelumLunas || isBelumLunasWithoutDP) ...[
++                    const SizedBox(height: 12),
++                    Container(
++                      width: double.infinity,
++                      padding: const EdgeInsets.symmetric(
++                        vertical: 12,
++                        horizontal: 16,
+                       ),
+-                    ],
++                      decoration: BoxDecoration(
++                        color: Colors.red.shade50,
++                        borderRadius: BorderRadius.circular(12),
++                        border: Border.all(color: Colors.red.shade200),
++                      ),
++                      child: Row(
++                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
++                        children: [
++                          const Text(
++                            'Sisa Bayar',
++                            style: TextStyle(
++                              fontWeight: FontWeight.w800,
++                              fontSize: 15,
++                              color: Colors.red,
++                            ),
++                          ),
++                          Text(
++                            CurrencyFormatter.formatToRupiah(
++                              isDPBelumLunas ? sisaBayar : grandTotal,
++                            ),
++                            style: const TextStyle(
++                              fontWeight: FontWeight.w800,
++                              fontSize: 16,
++                              color: Colors.red,
++                            ),
++                          ),
++                        ],
++                      ),
++                    ),
++                  ],
++
++                  const SizedBox(height: 24),
++
++                  // ── Footer ──
++                  Center(
++                    child: Text(
++                      footer,
++                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
++                      textAlign: TextAlign.center,
++                    ),
+                   ),
+-                ),
+-              ),
+ 
+-              const SizedBox(height: 4),
+-            ],
+-          ),
++                  const SizedBox(height: 24),
++                  DashedDivider(color: Colors.grey.shade300),
++                  const SizedBox(height: 16),
++
++                  Center(
++                    child: RichText(
++                      text: TextSpan(
++                        style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
++                        children: const [
++                          TextSpan(text: 'Powered by '),
++                          TextSpan(
++                            text: 'AyoCuci POS',
++                            style: TextStyle(
++                              color: AppPalette.primary,
++                              fontWeight: FontWeight.bold,
++                            ),
++                          ),
++                        ],
++                      ),
++                    ),
++                  ),
++                ],
++              ),
++            ),
++          ],
+         ),
+       ),
+     );
+@@ -505,9 +517,9 @@ class NotaPreviewWidget extends StatelessWidget {
+     return double.tryParse(value.toString()) ?? fallback;
+   }
+ 
+-  Widget _row(String label, String value, {bool bold = false}) {
++  Widget _row(String label, String value, {bool bold = false, Color? valueColor}) {
+     return Padding(
+-      padding: const EdgeInsets.only(bottom: 4),
++      padding: const EdgeInsets.only(bottom: 6),
+       child: Row(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+@@ -515,8 +527,9 @@ class NotaPreviewWidget extends StatelessWidget {
+           Text(
+             label,
+             style: TextStyle(
+-              fontSize: 12,
+-              fontWeight: bold ? FontWeight.bold : FontWeight.normal,
++              fontSize: 13,
++              color: Colors.grey.shade700,
++              fontWeight: bold ? FontWeight.w600 : FontWeight.normal,
+             ),
+           ),
+           const SizedBox(width: 12),
+@@ -525,9 +538,9 @@ class NotaPreviewWidget extends StatelessWidget {
+               value,
+               textAlign: TextAlign.right,
+               style: TextStyle(
+-                fontSize: 12,
+-                fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+-                color: value.contains('Rp') ? AppPalette.primary : null,
++                fontSize: 13,
++                fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
++                color: valueColor ?? (value.contains('Rp') ? Colors.black87 : Colors.black87),
+               ),
+             ),
+           ),
+@@ -536,25 +549,23 @@ class NotaPreviewWidget extends StatelessWidget {
+     );
+   }
+ 
+-  /// Seperti _row tapi value bisa wrap ke bawah (untuk alamat panjang — sinkron _wrapAddress di text builder)
+   Widget _rowWrapValue(String label, String value) {
+     return Padding(
+-      padding: const EdgeInsets.only(bottom: 4),
++      padding: const EdgeInsets.only(bottom: 6),
+       child: Row(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Text(label, style: const TextStyle(fontSize: 12)),
++          Text(label, style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+           const SizedBox(width: 6),
+-          const Text(':', style: TextStyle(fontSize: 12)),
++          Text(':', style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+           const SizedBox(width: 6),
+-          Expanded(child: Text(value, style: const TextStyle(fontSize: 12))),
++          Expanded(child: Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500))),
+         ],
+       ),
+     );
+   }
+ }
+ 
+-// ── Section label helper ──────────────────────────────────────────────────────
+ class _SectionLabel extends StatelessWidget {
+   final String text;
+   const _SectionLabel(this.text);
+@@ -563,12 +574,11 @@ class _SectionLabel extends StatelessWidget {
+   Widget build(BuildContext context) {
+     return Text(
+       text,
+-      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
++      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: 0.3),
+     );
+   }
+ }
+ 
+-// ── Detail item (sinkron penuh dengan _formatOrderDetail di nota_text_builder) ──────
+ class _DetailItem extends StatelessWidget {
+   final dynamic d;
+   const _DetailItem({required this.d});
+@@ -580,11 +590,8 @@ class _DetailItem extends StatelessWidget {
+ 
+   @override
+   Widget build(BuildContext context) {
+-    // ── Resolusi nama (sinkron persis dengan _formatOrderDetail) ──
+-    // 1. nama_layanan (field langsung, tanpa kurung)
+     String name = d['nama_layanan']?.toString() ?? '';
+ 
+-    // 2. dtr_nama_layanan — ekstrak isi dalam kurung jika ada (sama seperti text builder)
+     if (name.isEmpty) {
+       final dtrNama = d['dtr_nama_layanan']?.toString() ?? '';
+       final parenRegex = RegExp(r'^.*?\(\s*(.*?)\s*\)$');
+@@ -592,7 +599,6 @@ class _DetailItem extends StatelessWidget {
+       name = match != null ? match.group(1)! : dtrNama;
+     }
+ 
+-    // 3. Fallback ke nama_kategori / dtr_nama_kategori
+     if (name.isEmpty) {
+       name =
+           d['dtr_nama_sub_kategori']?.toString() ??
+@@ -617,7 +623,6 @@ class _DetailItem extends StatelessWidget {
+               .replaceAll(RegExp(r'0+$'), '')
+               .replaceAll(RegExp(r'\.$'), '');
+ 
+-    // ── Durasi (sinkron nota_text_builder: pakai duration/durasi/dtr_durasi) ──
+     final durasi = d['duration'] ?? d['durasi'] ?? d['dtr_durasi'];
+     final durasiSatuan =
+         (d['duration_unit'] ??
+@@ -634,35 +639,38 @@ class _DetailItem extends StatelessWidget {
+         ? ' ($durasi $durasiSatuan)'
+         : '';
+ 
+-    // Pecah nama jika ada catatan dalam kurung (sinkron nota_text_builder)
+     final parenMatch = RegExp(r'^(.*?)(\s*\(.*\))\s*$').firstMatch(name);
+     final mainName = parenMatch != null ? parenMatch.group(1)!.trim() : name;
+     final parenNote = parenMatch != null ? parenMatch.group(2)!.trim() : '';
+ 
+     return Padding(
+-      padding: const EdgeInsets.only(bottom: 6),
++      padding: const EdgeInsets.only(bottom: 12),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+           Text(
+             '$mainName$durasiStr',
+-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
++            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+           ),
+           if (parenNote.isNotEmpty)
+-            Text(
+-              parenNote,
+-              style: const TextStyle(fontSize: 11, color: Colors.grey),
++            Padding(
++              padding: const EdgeInsets.only(top: 2),
++              child: Text(
++                parenNote,
++                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
++              ),
+             ),
++          const SizedBox(height: 4),
+           Row(
+             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+             children: [
+               Text(
+                 '$qtyStr $satuan x ${CurrencyFormatter.formatToRupiah(unitPrice)}',
+-                style: const TextStyle(fontSize: 11, color: Colors.grey),
++                style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
+               ),
+               Text(
+                 CurrencyFormatter.formatToRupiah(subtotal),
+-                style: const TextStyle(fontSize: 12),
++                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+               ),
+             ],
+           ),
+@@ -672,7 +680,6 @@ class _DetailItem extends StatelessWidget {
+   }
+ }
+ 
+-// ── Optional items widget (sinkron dengan _formatOptionalItems di nota_text_builder) ──
+ class _OptionalItemsWidget extends StatelessWidget {
+   final dynamic rawItems;
+   const _OptionalItemsWidget({required this.rawItems});
+@@ -681,7 +688,6 @@ class _OptionalItemsWidget extends StatelessWidget {
+   Widget build(BuildContext context) {
+     if (rawItems is! List || rawItems.isEmpty) return const SizedBox.shrink();
+ 
+-    // Group by service_name (sinkron dengan _formatOptionalItems)
+     final grouped = <String, List<Map>>{};
+     for (final raw in rawItems) {
+       if (raw is! Map) continue;
+@@ -696,10 +702,10 @@ class _OptionalItemsWidget extends StatelessWidget {
+       if (serviceName.isNotEmpty) {
+         widgets.add(
+           Padding(
+-            padding: const EdgeInsets.only(bottom: 2),
++            padding: const EdgeInsets.only(bottom: 4),
+             child: Text(
+-              '- $serviceName',
+-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
++              '• $serviceName',
++              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade800),
+             ),
+           ),
+         );
+@@ -716,13 +722,13 @@ class _OptionalItemsWidget extends StatelessWidget {
+         final qty = item['qty'] ?? 1;
+         final keterangan = item['keterangan']?.toString().trim() ?? '';
+         final note = keterangan.isNotEmpty ? ' ($keterangan)' : '';
+-        final prefix = serviceName.isNotEmpty ? '    ' : '- ';
++        final prefix = serviceName.isNotEmpty ? '    ' : '• ';
+         widgets.add(
+           Padding(
+-            padding: const EdgeInsets.only(bottom: 2, left: 4),
++            padding: const EdgeInsets.only(bottom: 4, left: 4),
+             child: Text(
+               '$prefix$itemName x $qty pcs$note',
+-              style: const TextStyle(fontSize: 11, color: Colors.grey),
++              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+             ),
+           ),
+         );
+@@ -735,3 +741,4 @@ class _OptionalItemsWidget extends StatelessWidget {
+     );
+   }
+ }
++
+diff --git a/lib/shared/widgets/nota_text_builder.dart b/lib/shared/widgets/nota_text_builder.dart
+index c997d0e..25a632e 100644
+--- a/lib/shared/widgets/nota_text_builder.dart
++++ b/lib/shared/widgets/nota_text_builder.dart
+@@ -432,11 +432,11 @@ class NotaTextBuilder {
+     // ── Sisa Bayar: center + bold marker ──
+     // Prefix "~~" dipakai sebagai penanda center+big di printer provider
+     final sisaBayarSection = (isDPBelumLunas || isBelumLunasWithoutDP)
+-        ? '\n~~Sisa Bayar: ${CurrencyFormatter.formatToRupiah(isDPBelumLunas ? sisaBayar : grandTotal)}\n================================'
++        ? '\n~~Sisa Bayar: ${CurrencyFormatter.formatToRupiah(isDPBelumLunas ? sisaBayar : grandTotal)}\n--------------------------------'
+         : '';
+ 
+     return '''$outletHeader
+-================================
++--------------------------------
+ ~~CUST~~$customerName
+ --------------------------------
+ ${info.toString().trimRight()}
+@@ -445,9 +445,9 @@ DETAIL PESANAN:
+ $orderDetail$optionalItemSection
+ --------------------------------
+ ${price.toString().trimRight()}
+-================================
++--------------------------------
+ ~~STATUS~~$statusBanner$selesaiNote
+-================================$sisaBayarSection
++--------------------------------$sisaBayarSection
+ $footer''';
+   }
+ 
+diff --git a/lib/shared/widgets/report_access_placeholder.dart b/lib/shared/widgets/report_access_placeholder.dart
+index fa357f8..b7ba150 100644
+--- a/lib/shared/widgets/report_access_placeholder.dart
++++ b/lib/shared/widgets/report_access_placeholder.dart
+@@ -7,6 +7,10 @@ class ReportAccessPlaceholder extends StatelessWidget {
+   final String message;
+   final String? caption;
+   final bool compact;
++  final List<String>? highlights;
++  final String? accessNote;
++  final String? actionLabel;
++  final VoidCallback? onActionTap;
+ 
+   const ReportAccessPlaceholder({
+     super.key,
+@@ -15,6 +19,10 @@ class ReportAccessPlaceholder extends StatelessWidget {
+     required this.message,
+     this.caption,
+     this.compact = false,
++    this.highlights,
++    this.accessNote,
++    this.actionLabel,
++    this.onActionTap,
+   });
+ 
+   @override
+diff --git a/linux/flutter/generated_plugin_registrant.cc b/linux/flutter/generated_plugin_registrant.cc
+index ea3bde6..c98d4c3 100644
+--- a/linux/flutter/generated_plugin_registrant.cc
++++ b/linux/flutter/generated_plugin_registrant.cc
+@@ -6,12 +6,17 @@
+ 
+ #include "generated_plugin_registrant.h"
+ 
++#include <audioplayers_linux/audioplayers_linux_plugin.h>
+ #include <file_selector_linux/file_selector_plugin.h>
+ #include <flutter_secure_storage_linux/flutter_secure_storage_linux_plugin.h>
+ #include <gtk/gtk_plugin.h>
++#include <printing/printing_plugin.h>
+ #include <url_launcher_linux/url_launcher_plugin.h>
+ 
+ void fl_register_plugins(FlPluginRegistry* registry) {
++  g_autoptr(FlPluginRegistrar) audioplayers_linux_registrar =
++      fl_plugin_registry_get_registrar_for_plugin(registry, "AudioplayersLinuxPlugin");
++  audioplayers_linux_plugin_register_with_registrar(audioplayers_linux_registrar);
+   g_autoptr(FlPluginRegistrar) file_selector_linux_registrar =
+       fl_plugin_registry_get_registrar_for_plugin(registry, "FileSelectorPlugin");
+   file_selector_plugin_register_with_registrar(file_selector_linux_registrar);
+@@ -21,6 +26,9 @@ void fl_register_plugins(FlPluginRegistry* registry) {
+   g_autoptr(FlPluginRegistrar) gtk_registrar =
+       fl_plugin_registry_get_registrar_for_plugin(registry, "GtkPlugin");
+   gtk_plugin_register_with_registrar(gtk_registrar);
++  g_autoptr(FlPluginRegistrar) printing_registrar =
++      fl_plugin_registry_get_registrar_for_plugin(registry, "PrintingPlugin");
++  printing_plugin_register_with_registrar(printing_registrar);
+   g_autoptr(FlPluginRegistrar) url_launcher_linux_registrar =
+       fl_plugin_registry_get_registrar_for_plugin(registry, "UrlLauncherPlugin");
+   url_launcher_plugin_register_with_registrar(url_launcher_linux_registrar);
+diff --git a/linux/flutter/generated_plugins.cmake b/linux/flutter/generated_plugins.cmake
+index 1e154fe..91e518e 100644
+--- a/linux/flutter/generated_plugins.cmake
++++ b/linux/flutter/generated_plugins.cmake
+@@ -3,9 +3,11 @@
+ #
+ 
+ list(APPEND FLUTTER_PLUGIN_LIST
++  audioplayers_linux
+   file_selector_linux
+   flutter_secure_storage_linux
+   gtk
++  printing
+   url_launcher_linux
+ )
+ 
+diff --git a/macos/Flutter/GeneratedPluginRegistrant.swift b/macos/Flutter/GeneratedPluginRegistrant.swift
+index 300c3c6..4b429db 100644
+--- a/macos/Flutter/GeneratedPluginRegistrant.swift
++++ b/macos/Flutter/GeneratedPluginRegistrant.swift
+@@ -6,7 +6,7 @@ import FlutterMacOS
+ import Foundation
+ 
+ import app_links
+-import blue_thermal_printer
++import audioplayers_darwin
+ import device_info_plus
+ import file_picker
+ import file_selector_macos
+@@ -16,16 +16,20 @@ import flutter_contacts
+ import flutter_local_notifications
+ import flutter_secure_storage_darwin
+ import google_sign_in_ios
++import in_app_purchase_storekit
+ import mobile_scanner
+ import package_info_plus
++import print_bluetooth_thermal
++import printing
+ import share_plus
+ import shared_preferences_foundation
++import sign_in_with_apple
+ import sqflite_darwin
+ import url_launcher_macos
+ 
+ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+   AppLinksMacosPlugin.register(with: registry.registrar(forPlugin: "AppLinksMacosPlugin"))
+-  BlueThermalPrinterPlugin.register(with: registry.registrar(forPlugin: "BlueThermalPrinterPlugin"))
++  AudioplayersDarwinPlugin.register(with: registry.registrar(forPlugin: "AudioplayersDarwinPlugin"))
+   DeviceInfoPlusMacosPlugin.register(with: registry.registrar(forPlugin: "DeviceInfoPlusMacosPlugin"))
+   FilePickerPlugin.register(with: registry.registrar(forPlugin: "FilePickerPlugin"))
+   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
+@@ -35,10 +39,14 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+   FlutterLocalNotificationsPlugin.register(with: registry.registrar(forPlugin: "FlutterLocalNotificationsPlugin"))
+   FlutterSecureStorageDarwinPlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStorageDarwinPlugin"))
+   FLTGoogleSignInPlugin.register(with: registry.registrar(forPlugin: "FLTGoogleSignInPlugin"))
++  InAppPurchasePlugin.register(with: registry.registrar(forPlugin: "InAppPurchasePlugin"))
+   MobileScannerPlugin.register(with: registry.registrar(forPlugin: "MobileScannerPlugin"))
+   FPPPackageInfoPlusPlugin.register(with: registry.registrar(forPlugin: "FPPPackageInfoPlusPlugin"))
++  PrintBluetoothThermalPlugin.register(with: registry.registrar(forPlugin: "PrintBluetoothThermalPlugin"))
++  PrintingPlugin.register(with: registry.registrar(forPlugin: "PrintingPlugin"))
+   SharePlusMacosPlugin.register(with: registry.registrar(forPlugin: "SharePlusMacosPlugin"))
+   SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
++  SignInWithApplePlugin.register(with: registry.registrar(forPlugin: "SignInWithApplePlugin"))
+   SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin"))
+   UrlLauncherPlugin.register(with: registry.registrar(forPlugin: "UrlLauncherPlugin"))
+ }
+diff --git a/pubspec.yaml b/pubspec.yaml
+index fc8a65e..5a3b796 100644
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -3,7 +3,7 @@ description: "A new Flutter project."
+ 
+ publish_to: "none"
+ 
+-version: 1.0.1+22
++version: 1.0.2+24
+ 
+ environment:
+   sdk: ^3.10.4
+@@ -91,6 +91,10 @@ flutter:
+     - assets/icons/
+     - assets/icons/home/
+     - assets/icons/logo/
++    - assets/onboarding/
++    - assets/onboarding/1/
++    - assets/onboarding/2/
++    - assets/onboarding/3/
+     - assets/icons/pengeluaran/
+     - assets/icons/setting_screen/
+     - assets/icons/notification/
+diff --git a/windows/flutter/generated_plugin_registrant.cc b/windows/flutter/generated_plugin_registrant.cc
+index 4a0e22d..fa7f099 100644
+--- a/windows/flutter/generated_plugin_registrant.cc
++++ b/windows/flutter/generated_plugin_registrant.cc
+@@ -7,16 +7,21 @@
+ #include "generated_plugin_registrant.h"
+ 
+ #include <app_links/app_links_plugin_c_api.h>
++#include <audioplayers_windows/audioplayers_windows_plugin.h>
+ #include <file_selector_windows/file_selector_windows.h>
+ #include <firebase_core/firebase_core_plugin_c_api.h>
+ #include <flutter_secure_storage_windows/flutter_secure_storage_windows_plugin.h>
+ #include <permission_handler_windows/permission_handler_windows_plugin.h>
++#include <print_bluetooth_thermal/print_bluetooth_thermal_plugin_c_api.h>
++#include <printing/printing_plugin.h>
+ #include <share_plus/share_plus_windows_plugin_c_api.h>
+ #include <url_launcher_windows/url_launcher_windows.h>
+ 
+ void RegisterPlugins(flutter::PluginRegistry* registry) {
+   AppLinksPluginCApiRegisterWithRegistrar(
+       registry->GetRegistrarForPlugin("AppLinksPluginCApi"));
++  AudioplayersWindowsPluginRegisterWithRegistrar(
++      registry->GetRegistrarForPlugin("AudioplayersWindowsPlugin"));
+   FileSelectorWindowsRegisterWithRegistrar(
+       registry->GetRegistrarForPlugin("FileSelectorWindows"));
+   FirebaseCorePluginCApiRegisterWithRegistrar(
+@@ -25,6 +30,10 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
+       registry->GetRegistrarForPlugin("FlutterSecureStorageWindowsPlugin"));
+   PermissionHandlerWindowsPluginRegisterWithRegistrar(
+       registry->GetRegistrarForPlugin("PermissionHandlerWindowsPlugin"));
++  PrintBluetoothThermalPluginCApiRegisterWithRegistrar(
++      registry->GetRegistrarForPlugin("PrintBluetoothThermalPluginCApi"));
++  PrintingPluginRegisterWithRegistrar(
++      registry->GetRegistrarForPlugin("PrintingPlugin"));
+   SharePlusWindowsPluginCApiRegisterWithRegistrar(
+       registry->GetRegistrarForPlugin("SharePlusWindowsPluginCApi"));
+   UrlLauncherWindowsRegisterWithRegistrar(
+diff --git a/windows/flutter/generated_plugins.cmake b/windows/flutter/generated_plugins.cmake
+index 9893f81..efab8b2 100644
+--- a/windows/flutter/generated_plugins.cmake
++++ b/windows/flutter/generated_plugins.cmake
+@@ -4,10 +4,13 @@
+ 
+ list(APPEND FLUTTER_PLUGIN_LIST
+   app_links
++  audioplayers_windows
+   file_selector_windows
+   firebase_core
+   flutter_secure_storage_windows
+   permission_handler_windows
++  print_bluetooth_thermal
++  printing
+   share_plus
+   url_launcher_windows
+ )

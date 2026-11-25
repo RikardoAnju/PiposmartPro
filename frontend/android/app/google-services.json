@@ -1,0 +1,122 @@
+{
+  "project_info": {
+    "project_number": "92161657227",
+    "project_id": "ayocuci-apps-bc647",
+    "storage_bucket": "ayocuci-apps-bc647.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:92161657227:android:0de9ebd8133bebdea9c78e",
+        "android_client_info": {
+          "package_name": "id.co.ayocuci.apps"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "92161657227-4m5gp2cekflbc4j47ej9ccv6874cel6o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "id.co.ayocuci.apps",
+            "certificate_hash": "c133aa51d3074ec363c47d84398a333b1204ed9a"
+          }
+        },
+        {
+          "client_id": "92161657227-6n6qb0apm7stbaj968kejc12od1func8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "id.co.ayocuci.apps",
+            "certificate_hash": "709d9961e0ccbfa4d5533519762b5bc9e525d093"
+          }
+        },
+        {
+          "client_id": "92161657227-gfo1ata02vn7bpvbnoggf4uj7plm3c6g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "id.co.ayocuci.apps",
+            "certificate_hash": "bd870719bf2483fbf5cc64dfe886857667f074b8"
+          }
+        },
+        {
+          "client_id": "92161657227-v6o3klbt9rkg9u1epnubrvrta532thiv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "id.co.ayocuci.apps",
+            "certificate_hash": "368313b164ae09a284983612f7656d91df7b78a8"
+          }
+        },
+        {
+          "client_id": "92161657227-mqftmpj1rcpa6rcm2dfmrtts9joqid8a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7PLJSScihcS4afhBfAJZDqITU5CzXpl4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "92161657227-9gd09ggs835ntp1k926vt2q142qek50h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "92161657227-2ftj1g1qb8pup5bt7o31its8g50qvfh0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "id.ayocuci.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:92161657227:android:e748df187e8506d3a9c78e",
+        "android_client_info": {
+          "package_name": "id.co.ayocuci.apps.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "92161657227-o5i2t77pq6hvv1r1pg9annchpbe2ovt2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "id.co.ayocuci.apps.dev",
+            "certificate_hash": "bd870719bf2483fbf5cc64dfe886857667f074b8"
+          }
+        },
+        {
+          "client_id": "92161657227-mqftmpj1rcpa6rcm2dfmrtts9joqid8a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7PLJSScihcS4afhBfAJZDqITU5CzXpl4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "92161657227-9gd09ggs835ntp1k926vt2q142qek50h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "92161657227-2ftj1g1qb8pup5bt7o31its8g50qvfh0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "id.ayocuci.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,3173 @@
+diff --git a/lib/app_providers.dart b/lib/app_providers.dart
+index 8600518..cf73bf7 100644
+--- a/lib/app_providers.dart
++++ b/lib/app_providers.dart
+@@ -9,6 +9,7 @@ import 'package:ayocucinew/providers/addon_provider.dart';
+ import 'package:ayocucinew/providers/app_provider.dart';
+ import 'package:ayocucinew/providers/auth_provider.dart';
+ import 'package:ayocucinew/providers/customer_provider.dart';
++import 'package:ayocucinew/providers/content_provider.dart';
+ import 'package:ayocucinew/providers/diskon_provider.dart';
+ import 'package:ayocucinew/providers/item_provider.dart';
+ import 'package:ayocucinew/providers/kategori_pengeluaran_provider.dart';
+@@ -42,6 +43,7 @@ class AppProviders {
+         ChangeNotifierProvider.value(value: authProvider),
+         ChangeNotifierProvider(create: (_) => ServiceProvider()),
+         ChangeNotifierProvider(create: (_) => CustomerProvider()),
++        ChangeNotifierProvider(create: (_) => ContentProvider()),
+         ChangeNotifierProvider(create: (_) => ParfumProvider()),
+         ChangeNotifierProvider(create: (_) => DiskonProvider()),
+         ChangeNotifierProvider(create: (_) => TransactionProvider()),
+diff --git a/lib/data/models/notif_model.dart b/lib/data/models/notif_model.dart
+index a289f85..3c70afe 100644
+--- a/lib/data/models/notif_model.dart
++++ b/lib/data/models/notif_model.dart
+@@ -4,6 +4,7 @@ class NotifModel {
+   final String judul;
+   final String pesan;
+   final String kategori;
++  final String? imageUrl;
+   final int status; // 0: Unread, 1: Read
+   final DateTime createdAt;
+ 
+@@ -13,6 +14,7 @@ class NotifModel {
+     required this.judul,
+     required this.pesan,
+     required this.kategori,
++    this.imageUrl,
+     required this.status,
+     required this.createdAt,
+   });
+@@ -26,9 +28,10 @@ class NotifModel {
+       judul: master['judul'] ?? json['nt_judul'] ?? '',
+       pesan: master['pesan'] ?? json['nt_pesan'] ?? '',
+       kategori: master['kategori'] ?? json['nt_kategori'] ?? 'INFO',
++      imageUrl: master['image_url'] ?? json['image_url'],
+       status: json['status'] ?? 0,
+       createdAt: DateTime.parse(
+-        json['read_at'] ?? json['created_at'] ?? DateTime.now().toString(),
++        master['created_at'] ?? json['created_at'] ?? DateTime.now().toString(),
+       ),
+     );
+   }
+diff --git a/lib/data/models/transaction_model.dart b/lib/data/models/transaction_model.dart
+index e7a2d81..d0b92ee 100644
+--- a/lib/data/models/transaction_model.dart
++++ b/lib/data/models/transaction_model.dart
+@@ -95,12 +95,35 @@ class CartItem {
+         ) ??
+         0.0;
+ 
++    int? estimateDurationFromReadyAt() {
++      final readyAtRaw = map['ready_at'] ?? map['dtr_ready_at'];
++      final createdAtRaw = map['created_at'] ?? map['dtr_created'];
++      final readyAt = readyAtRaw != null
++          ? DateTime.tryParse(readyAtRaw.toString())?.toLocal()
++          : null;
++      final createdAt = createdAtRaw != null
++          ? DateTime.tryParse(createdAtRaw.toString())?.toLocal()
++          : null;
++
++      if (readyAt == null || createdAt == null) return null;
++      final diff = readyAt.difference(createdAt);
++      if (diff.inMinutes <= 0) return null;
++
++      // Backend transaction detail can omit service duration but provides
++      // ready_at. Use ceil so 1d 23:59:59 still displays as 2 Hari.
++      return (diff.inMinutes / (24 * 60))
++          .ceil()
++          .clamp(1, 999)
++          .toInt();
++    }
++
+     final durationRaw =
+         map['dtr_durasi'] ??
+         map['jp_durasi'] ??
+         map['durasi'] ??
+         map['duration'] ??
+         meta['durasi'] ??
++        estimateDurationFromReadyAt() ??
+         0;
+     final duration = int.tryParse(durationRaw.toString()) ?? 0;
+ 
+@@ -110,7 +133,7 @@ class CartItem {
+                 map['durasi_satuan'] ??
+                 map['duration_unit'] ??
+                 meta['durasi_satuan'] ??
+-                '')
++                (duration > 0 ? 'Hari' : ''))
+             .toString();
+ 
+     final unit =
+@@ -199,6 +222,10 @@ class CartItem {
+     'price': price,
+     'harga': price,
+     'unit': unit,
++    'duration': duration,
++    'duration_unit': durationUnit,
++    'durasi': duration,
++    'durasi_satuan': durationUnit,
+     'icon_path': iconPath,
+     'order_status': orderStatus,
+     'payment_status': paymentStatus,
+@@ -453,4 +480,4 @@ class TransactionModel {
+     'antar_biaya': antarBiaya,
+     'details': items.map((e) => e.toJson()).toList(),
+   };
+-}
+\ No newline at end of file
++}
+diff --git a/lib/providers/notification_provider.dart b/lib/providers/notification_provider.dart
+index 854c922..1146252 100644
+--- a/lib/providers/notification_provider.dart
++++ b/lib/providers/notification_provider.dart
+@@ -111,6 +111,46 @@ class NotificationProvider extends ChangeNotifier {
+     }
+   }
+ 
++  Future<void> markSelectedRead(Set<int> ids) async {
++    if (_token == null || ids.isEmpty) return;
++    try {
++      final res = await ApiClient.patch(
++        "/notifications/read-selected",
++        token: _token,
++        body: {"ids": ids.toList()},
++      );
++      if (res.statusCode == 200) {
++        _notifications = _notifications.map((n) {
++          return ids.contains(n.id) ? n.copyWith(status: 1) : n;
++        }).toList();
++        _updateUnreadCount();
++        notifyListeners();
++      }
++    } catch (e) {
++      debugPrint("❌ Read Selected Error: $e");
++    }
++  }
++
++  Future<void> deleteSelected(Set<int> ids) async {
++    if (_token == null || ids.isEmpty) return;
++    try {
++      final res = await ApiClient.patch(
++        "/notifications/delete-selected",
++        token: _token,
++        body: {"ids": ids.toList()},
++      );
++      if (res.statusCode == 200) {
++        _notifications = _notifications
++            .where((n) => !ids.contains(n.id))
++            .toList();
++        _updateUnreadCount();
++        notifyListeners();
++      }
++    } catch (e) {
++      debugPrint("❌ Delete Selected Error: $e");
++    }
++  }
++
+   void _updateUnreadCount() {
+     _unreadCount = _notifications.where((n) => n.status == 0).length;
+   }
+@@ -130,6 +170,7 @@ extension NotifModelX on NotifModel {
+       judul: judul,
+       pesan: pesan,
+       kategori: kategori,
++      imageUrl: imageUrl,
+       status: status ?? this.status,
+       createdAt: createdAt,
+     );
+diff --git a/lib/providers/summary_provider.dart b/lib/providers/summary_provider.dart
+index 14dd500..ba918c1 100644
+--- a/lib/providers/summary_provider.dart
++++ b/lib/providers/summary_provider.dart
+@@ -63,7 +63,7 @@ class SummaryProvider extends ChangeNotifier {
+       final token = AuthStorage.token;
+       if (token == null) return;
+ 
+-      // Hit endpoint ringkasan (Terlambat, Harus Selesai, Selesai Hari Ini, Siap Ambil)
++      // Hit endpoint ringkasan: Terlambat, Harus Selesai, Baru Masuk, Selesai.
+       final res = await ApiClient.get('/summary/aggregated', token: token);
+ 
+       if (res.statusCode == 200) {
+diff --git a/lib/providers/transaction_provider.dart b/lib/providers/transaction_provider.dart
+index 1fbdbf2..a2b4274 100644
+--- a/lib/providers/transaction_provider.dart
++++ b/lib/providers/transaction_provider.dart
+@@ -24,9 +24,18 @@ class OptionalItem {
+   int qty;
+   String keterangan;
+ 
+-  OptionalItem({required this.id, required this.name, this.qty = 1, this.keterangan = ''});
+-
+-  Map<String, dynamic> toPayload() => {'item_id': id, 'qty': qty, 'keterangan': keterangan};
++  OptionalItem({
++    required this.id,
++    required this.name,
++    this.qty = 1,
++    this.keterangan = '',
++  });
++
++  Map<String, dynamic> toPayload() => {
++    'item_id': id,
++    'qty': qty,
++    'keterangan': keterangan,
++  };
+ }
+ 
+ class TransactionProvider extends ChangeNotifier {
+@@ -101,9 +110,11 @@ class TransactionProvider extends ChangeNotifier {
+   PaymentMethod? get selectedPaymentMethod => _selectedPaymentMethod;
+   String get notes => _notes;
+ 
+-  List<OptionalItem> get optionalItems => _optionalItemsByService.values.expand((list) => list).toList();
++  List<OptionalItem> get optionalItems =>
++      _optionalItemsByService.values.expand((list) => list).toList();
+ 
+-  Map<String, List<OptionalItem>> get optionalItemsByService => Map.unmodifiable(_optionalItemsByService);
++  Map<String, List<OptionalItem>> get optionalItemsByService =>
++      Map.unmodifiable(_optionalItemsByService);
+ 
+   bool get isLoading => _isLoading;
+   String? get errorMessage => _errorMessage;
+@@ -123,14 +134,24 @@ class TransactionProvider extends ChangeNotifier {
+   JemputAntarData get jemputAntar => _jemputAntar;
+ 
+   bool get isLunasMode => _pendingOrder?['is_from_detail'] == true;
+-  double get sisaBayarFromDetail => (_pendingOrder?['sisa_bayar'] as num?)?.toDouble() ?? 0.0;
+-  double get grandTotalFromDetail => (_pendingOrder?['grand_total'] as num?)?.toDouble() ?? 0.0;
+-  double get dpAmountFromDetail => (_pendingOrder?['dp_amount'] as num?)?.toDouble() ?? 0.0;
+-  double get subtotalFromDetail => (_pendingOrder?['total_kotor'] as num?)?.toDouble() ?? grandTotalFromDetail;
+-  double get discountAmountFromDetail => (_pendingOrder?['potongan_diskon'] as num?)?.toDouble() ?? 0.0;
+-  String? get transactionIdFromDetail => _pendingOrder?['transaction_id']?.toString();
++  double get sisaBayarFromDetail =>
++      (_pendingOrder?['sisa_bayar'] as num?)?.toDouble() ?? 0.0;
++  double get grandTotalFromDetail =>
++      (_pendingOrder?['grand_total'] as num?)?.toDouble() ?? 0.0;
++  double get dpAmountFromDetail =>
++      (_pendingOrder?['dp_amount'] as num?)?.toDouble() ?? 0.0;
++  double get subtotalFromDetail =>
++      (_pendingOrder?['total_kotor'] as num?)?.toDouble() ??
++      grandTotalFromDetail;
++  double get discountAmountFromDetail =>
++      (_pendingOrder?['potongan_diskon'] as num?)?.toDouble() ?? 0.0;
++  String? get transactionIdFromDetail =>
++      _pendingOrder?['transaction_id']?.toString();
+   List<Map<String, dynamic>> get paymentHistoryFromDetail =>
+-      (_pendingOrder?['payment_history_full'] as List?)?.map((e) => e as Map<String, dynamic>).toList() ?? [];
++      (_pendingOrder?['payment_history_full'] as List?)
++          ?.map((e) => e as Map<String, dynamic>)
++          .toList() ??
++      [];
+ 
+   // ==========================================
+   // LOGIKA KALKULASI (FLOW BARU: PIUTANG NO ROUNDING)
+@@ -187,7 +208,8 @@ class TransactionProvider extends ChangeNotifier {
+ 
+   // 6. Nominal yang dibayarkan ke API saat ini
+   double get totalToPay {
+-    if (isLunasMode) return grandTotal; // Nominal pelunasan mengikuti pembulatan baru
++    if (isLunasMode)
++      return grandTotal; // Nominal pelunasan mengikuti pembulatan baru
+ 
+     // Mode Transaksi Baru:
+     if (!_isPaid && _payWithDP && _dpAmount > 0) {
+@@ -208,17 +230,22 @@ class TransactionProvider extends ChangeNotifier {
+   // ==========================================
+ 
+   bool get canShowPaymentMethod => isLunasMode || _isPaid || (_payWithDP);
+-  bool get _isCashPayment => _selectedPaymentMethod?.category.toLowerCase() == 'cash';
++  bool get _isCashPayment =>
++      _selectedPaymentMethod?.category.toLowerCase() == 'cash';
+ 
+   List<TransactionModel> get filteredTransactions {
+     if (_selectedStatusFilter == 'Semua') return _allTransactions;
+-    return _allTransactions.where((t) => t.orderStatus == _selectedStatusFilter).toList();
++    return _allTransactions
++        .where((t) => t.orderStatus == _selectedStatusFilter)
++        .toList();
+   }
+ 
+   DateTime get estimateCompletion {
+     if (_cartItems.isEmpty) return DateTime.now();
+     final maxHours = _cartItems.fold<int>(0, (max, item) {
+-      final hours = item.durationUnit == 'Hari' ? item.duration * 24 : item.duration;
++      final hours = item.durationUnit == 'Hari'
++          ? item.duration * 24
++          : item.duration;
+       return hours > max ? hours : max;
+     });
+     return DateTime.now().add(Duration(hours: maxHours));
+@@ -242,7 +269,8 @@ class TransactionProvider extends ChangeNotifier {
+     return _cartItems;
+   }
+ 
+-  bool _isSuccess(Map<String, dynamic> data) => data['success'] == true || data['status'] == true;
++  bool _isSuccess(Map<String, dynamic> data) =>
++      data['success'] == true || data['status'] == true;
+ 
+   String getOrderDetailString() {
+     if (_cartItems.isEmpty) return '-';
+@@ -364,7 +392,10 @@ class TransactionProvider extends ChangeNotifier {
+     String? productId,
+   }) {
+     final readyAt = _calculateReadyTime(duration, durationUnit);
+-    final index = _cartItems.indexWhere((item) => item.categoryName == categoryName && item.serviceName == serviceName);
++    final index = _cartItems.indexWhere(
++      (item) =>
++          item.categoryName == categoryName && item.serviceName == serviceName,
++    );
+     if (index != -1) {
+       _cartItems[index].qty += qty;
+     } else {
+@@ -472,9 +503,13 @@ class TransactionProvider extends ChangeNotifier {
+ 
+   void addOptionalItem(String id, String nama, {int qty = 1}) {
+     _optionalItemsByService['__global__'] ??= [];
+-    final exists = _optionalItemsByService['__global__']!.any((e) => e.id == id);
++    final exists = _optionalItemsByService['__global__']!.any(
++      (e) => e.id == id,
++    );
+     if (!exists) {
+-      _optionalItemsByService['__global__']!.add(OptionalItem(id: id, name: nama, qty: qty));
++      _optionalItemsByService['__global__']!.add(
++        OptionalItem(id: id, name: nama, qty: qty),
++      );
+       notifyListeners();
+     }
+   }
+@@ -488,11 +523,18 @@ class TransactionProvider extends ChangeNotifier {
+     notifyListeners();
+   }
+ 
+-  void addOptionalItemForService(String serviceName, String id, String nama, {int qty = 1}) {
++  void addOptionalItemForService(
++    String serviceName,
++    String id,
++    String nama, {
++    int qty = 1,
++  }) {
+     _optionalItemsByService[serviceName] ??= [];
+     final exists = _optionalItemsByService[serviceName]!.any((e) => e.id == id);
+     if (!exists) {
+-      _optionalItemsByService[serviceName]!.add(OptionalItem(id: id, name: nama, qty: qty));
++      _optionalItemsByService[serviceName]!.add(
++        OptionalItem(id: id, name: nama, qty: qty),
++      );
+       notifyListeners();
+     }
+   }
+@@ -512,7 +554,10 @@ class TransactionProvider extends ChangeNotifier {
+   void setOptionalItems(List<Map<String, String>> items) {
+     _optionalItemsByService.clear();
+     _optionalItemsByService['__global__'] = items
+-        .map((item) => OptionalItem(id: item['id'] ?? '', name: item['name'] ?? ''))
++        .map(
++          (item) =>
++              OptionalItem(id: item['id'] ?? '', name: item['name'] ?? ''),
++        )
+         .toList();
+     notifyListeners();
+   }
+@@ -571,7 +616,8 @@ class TransactionProvider extends ChangeNotifier {
+     return 0;
+   }
+ 
+-  int getTotalOptionalItemsCount() => optionalItems.fold(0, (sum, item) => sum + item.qty);
++  int getTotalOptionalItemsCount() =>
++      optionalItems.fold(0, (sum, item) => sum + item.qty);
+ 
+   void setPendingOrderFromDetail(TransactionModel trx) {
+     final dp = trx.dpAmount;
+@@ -637,7 +683,9 @@ class TransactionProvider extends ChangeNotifier {
+       'is_paid': isPaid,
+       'cash_received': _cashReceived,
+       'change_amount': changeAmount,
+-      'optional_items': optionalItems.map((e) => {'id': e.id, 'name': e.name, 'qty': e.qty}).toList(),
++      'optional_items': optionalItems
++          .map((e) => {'id': e.id, 'name': e.name, 'qty': e.qty})
++          .toList(),
+       'cart_items': List.from(_cartItems),
+       'items_payload': _cartItems
+           .map(
+@@ -703,7 +751,10 @@ class TransactionProvider extends ChangeNotifier {
+     }
+   }
+ 
+-  Future<Map<String, dynamic>> updateTransaction(String transactionId, {bool isLunas = false}) async {
++  Future<Map<String, dynamic>> updateTransaction(
++    String transactionId, {
++    bool isLunas = false,
++  }) async {
+     _setLoading(true);
+     try {
+       final token = AuthStorage.token;
+@@ -713,10 +764,16 @@ class TransactionProvider extends ChangeNotifier {
+         'catatan': _notes,
+         'rounding_mode': _roundingMode.name,
+         if (!isLunas)
+-          'details': _cartItems.map((item) => {'product_id': item.productId ?? '', 'qty': item.qty}).toList(),
++          'details': _cartItems
++              .map(
++                (item) => {'product_id': item.productId ?? '', 'qty': item.qty},
++              )
++              .toList(),
+         'items': optionalItems.map((e) => e.toPayload()).toList(),
+-        if (_jemputAntar.jemputEnabled) 'jemput_alamat': _jemputAntar.jemputAlamat,
+-        if (_jemputAntar.jemputEnabled) 'jemput_biaya': _jemputAntar.jemputBiaya,
++        if (_jemputAntar.jemputEnabled)
++          'jemput_alamat': _jemputAntar.jemputAlamat,
++        if (_jemputAntar.jemputEnabled)
++          'jemput_biaya': _jemputAntar.jemputBiaya,
+         if (_jemputAntar.antarEnabled) 'antar_alamat': _jemputAntar.antarAlamat,
+         if (_jemputAntar.antarEnabled) 'antar_biaya': _jemputAntar.antarBiaya,
+       };
+@@ -756,11 +813,11 @@ class TransactionProvider extends ChangeNotifier {
+         if (status == 'Batal' && alasan.isNotEmpty) 'alasan': alasan,
+       };
+ 
+-      debugPrint('🔄 UPDATE STATUS body: $body'); // ← TAMBAH INI
+-
+-      final response = await ApiClient.patch('/status/update', body: body, token: token);
+-
+-      debugPrint('🔄 UPDATE STATUS response: ${response.statusCode} ${response.body}'); // ← TAMBAH INI
++      final response = await ApiClient.patch(
++        '/status/update',
++        body: body,
++        token: token,
++      );
+ 
+       if (response.statusCode == 200) {
+         await fetchAllTransactions();
+@@ -776,7 +833,11 @@ class TransactionProvider extends ChangeNotifier {
+     }
+   }
+ 
+-  Future<Map<String, dynamic>> processPayment(String transactionId, double amount, String methodId) async {
++  Future<Map<String, dynamic>> processPayment(
++    String transactionId,
++    double amount,
++    String methodId,
++  ) async {
+     _setLoading(true);
+     try {
+       final token = AuthStorage.token;
+@@ -822,7 +883,8 @@ class TransactionProvider extends ChangeNotifier {
+       final response = await ApiClient.post(
+         '${ApiEndpoints.transactions}/payment?id=$transactionId',
+         body: {
+-          'amount': amountToPay, // Mengirim nominal bulat (misal 4000) ke backend
++          'amount':
++              amountToPay, // Mengirim nominal bulat (misal 4000) ke backend
+           'method_id': _selectedPaymentMethod!.id,
+         },
+         token: token,
+@@ -856,7 +918,9 @@ class TransactionProvider extends ChangeNotifier {
+       );
+       final data = jsonDecode(response.body);
+       if (response.statusCode == 200 && _isSuccess(data)) {
+-        _allTransactions = (data['data'] as List).map((e) => TransactionModel.fromJson(e)).toList();
++        _allTransactions = (data['data'] as List)
++            .map((e) => TransactionModel.fromJson(e))
++            .toList();
+       } else {
+         _errorMessage = data['message'] ?? 'Gagal mengambil daftar transaksi';
+       }
+@@ -891,11 +955,19 @@ class TransactionProvider extends ChangeNotifier {
+       final token = AuthStorage.token;
+       if (_masterItems.isEmpty) await fetchMasterItems();
+ 
+-      final response = await ApiClient.get('${ApiEndpoints.transactions}/detail?id=$id', token: token);
++      final response = await ApiClient.get(
++        '${ApiEndpoints.transactions}/detail?id=$id',
++        token: token,
++      );
+       final data = jsonDecode(response.body);
+ 
+       if (response.statusCode == 200 && _isSuccess(data)) {
+-        _currentDetail = TransactionModel.fromJson(_remapApiFields(data['data']));
++        final kasirName = await _storage.read(key: 'user_name');
++        _currentDetail = TransactionModel.fromJson({
++          ..._remapApiFields(data['data']),
++          'kasir_name':
++              kasirName ?? data['data']['user_update']?.toString() ?? '-',
++        });
+       } else {
+         _errorMessage = data['message'] ?? 'Detail pesanan tidak ditemukan';
+       }
+@@ -933,7 +1005,9 @@ class TransactionProvider extends ChangeNotifier {
+       );
+       final data = jsonDecode(response.body);
+       if (response.statusCode == 200 && _isSuccess(data)) {
+-        return (data['data'] as List).map((e) => TransactionModel.fromJson(e)).toList();
++        return (data['data'] as List)
++            .map((e) => TransactionModel.fromJson(e))
++            .toList();
+       }
+       return [];
+     } catch (_) {
+@@ -948,7 +1022,10 @@ class TransactionProvider extends ChangeNotifier {
+     notifyListeners();
+   }
+ 
+-  Map<String, dynamic> _success(String message) => {'success': true, 'message': message};
++  Map<String, dynamic> _success(String message) => {
++    'success': true,
++    'message': message,
++  };
+ 
+   Map<String, dynamic> _error(String message) {
+     _errorMessage = message;
+@@ -995,7 +1072,9 @@ class TransactionProvider extends ChangeNotifier {
+       'dp_amount': _dpAmount > 0 ? _dpAmount : 0,
+       'rounding_mode': _roundingMode.name,
+       'catatan': _notes,
+-      'details': _cartItems.map((item) => {'product_id': item.productId ?? '', 'qty': item.qty}).toList(),
++      'details': _cartItems
++          .map((item) => {'product_id': item.productId ?? '', 'qty': item.qty})
++          .toList(),
+       'items': optionalItems.map((e) => e.toPayload()).toList(),
+       'jemput_alamat': _jemputAntar.jemputAlamat,
+       'jemput_biaya': _jemputAntar.jemputBiaya,
+@@ -1010,7 +1089,10 @@ class TransactionProvider extends ChangeNotifier {
+     return payload;
+   }
+ 
+-  void _handleCreateSuccess(Map<String, dynamic> data, Map<String, dynamic> snapshot) {
++  void _handleCreateSuccess(
++    Map<String, dynamic> data,
++    Map<String, dynamic> snapshot,
++  ) {
+     if (data['data']?['nota_config'] != null) {
+       _notaConfig = data['data']['nota_config'];
+     }
+@@ -1077,7 +1159,9 @@ class TransactionProvider extends ChangeNotifier {
+       'created_at': DateTime.now(),
+       'tr_code': '',
+       'tr_id': '',
+-      'jemput_alamat': _jemputAntar.jemputEnabled ? _jemputAntar.jemputAlamat : '',
++      'jemput_alamat': _jemputAntar.jemputEnabled
++          ? _jemputAntar.jemputAlamat
++          : '',
+       'jemput_biaya': _jemputAntar.jemputBiaya,
+       'antar_alamat': _jemputAntar.antarEnabled ? _jemputAntar.antarAlamat : '',
+       'antar_biaya': _jemputAntar.antarBiaya,
+@@ -1088,7 +1172,10 @@ class TransactionProvider extends ChangeNotifier {
+   String _lookupMasterItemName(String itemId) {
+     if (itemId.isEmpty) return itemId;
+     final master = _masterItems.firstWhere(
+-      (m) => m['ID']?.toString() == itemId || m['id']?.toString() == itemId || m['item_id']?.toString() == itemId,
++      (m) =>
++          m['ID']?.toString() == itemId ||
++          m['id']?.toString() == itemId ||
++          m['item_id']?.toString() == itemId,
+       orElse: () => {},
+     );
+     if (master.isEmpty) return itemId;
+@@ -1100,19 +1187,49 @@ class TransactionProvider extends ChangeNotifier {
+   }
+ 
+   Map<String, dynamic> _remapApiFields(Map<String, dynamic> raw) {
++    int? estimateDurationFromDates(Map<String, dynamic> map) {
++      final readyAtRaw = map['ready_at'] ?? map['dtr_ready_at'];
++      final createdAtRaw = map['created_at'] ?? map['dtr_created'];
++      final readyAt = readyAtRaw != null
++          ? DateTime.tryParse(readyAtRaw.toString())?.toLocal()
++          : null;
++      final createdAt = createdAtRaw != null
++          ? DateTime.tryParse(createdAtRaw.toString())?.toLocal()
++          : null;
++
++      if (readyAt == null || createdAt == null) return null;
++      final diff = readyAt.difference(createdAt);
++      if (diff.inMinutes <= 0) return null;
++      return (diff.inMinutes / (24 * 60))
++          .ceil()
++          .clamp(1, 999)
++          .toInt();
++    }
++
+     final normalizedDetails = (raw['details'] as List? ?? []).map((e) {
+       final map = e as Map<String, dynamic>;
+       final meta = map['product_metadata'] as Map<String, dynamic>? ?? {};
++      final duration =
++          meta['durasi'] ??
++          map['duration'] ??
++          map['durasi'] ??
++          estimateDurationFromDates(map);
+       return {
+         ...map,
+         ...meta,
+-        'service_name': meta['nama'] ?? map['service_name'] ?? map['nama_layanan'] ?? '-',
++        'service_name':
++            meta['nama'] ?? map['service_name'] ?? map['nama_layanan'] ?? '-',
+         'price': meta['harga'] ?? map['price'] ?? map['harga'] ?? 0,
+         'qty': map['qty'] ?? map['dtr_qty'] ?? 1,
+         'unit': meta['satuan'] ?? map['unit'] ?? map['satuan'] ?? 'Pcs',
+-        'duration': meta['durasi'] ?? map['duration'] ?? map['durasi'] ?? 0,
+-        'duration_unit': meta['durasi_satuan'] ?? map['duration_unit'] ?? map['durasi_satuan'] ?? 'Hari',
+-        'icon_path': meta['icon'] ?? map['icon_path'] ?? 'assets/icons/ic_baju.png',
++        if (duration != null) 'duration': duration,
++        'duration_unit':
++            meta['durasi_satuan'] ??
++            map['duration_unit'] ??
++            map['durasi_satuan'] ??
++            (duration != null ? 'Hari' : null),
++        'icon_path':
++            meta['icon'] ?? map['icon_path'] ?? 'assets/icons/ic_baju.png',
+         'product_metadata': meta,
+       };
+     }).toList();
+@@ -1124,7 +1241,11 @@ class TransactionProvider extends ChangeNotifier {
+     if (paymentHistory != null && paymentHistory.isNotEmpty) {
+       final lastPayment = paymentHistory.last as Map<String, dynamic>;
+       paidAt = DateTime.tryParse(
+-        (lastPayment['tanggal_dp'] ?? lastPayment['created_at'] ?? lastPayment['paid_at'] ?? '').toString(),
++        (lastPayment['tanggal_dp'] ??
++                lastPayment['created_at'] ??
++                lastPayment['paid_at'] ??
++                '')
++            .toString(),
+       )?.toLocal();
+ 
+       final metode =
+@@ -1137,9 +1258,11 @@ class TransactionProvider extends ChangeNotifier {
+               'name': metode['Nama'] ?? metode['name'] ?? 'Cash',
+               'category': metode['Kategori'] ?? metode['category'] ?? 'Cash',
+               'bank_name': metode['NamaBank'] ?? metode['bank_name'],
+-              'ewallet_provider': metode['EwalletProvider'] ?? metode['ewallet_provider'],
++              'ewallet_provider':
++                  metode['EwalletProvider'] ?? metode['ewallet_provider'],
+               'account_number': metode['NomorAkun'] ?? metode['account_number'],
+-              'account_holder': metode['NamaPemilik'] ?? metode['account_holder'],
++              'account_holder':
++                  metode['NamaPemilik'] ?? metode['account_holder'],
+               'phone_number': metode['NomorHP'] ?? metode['phone_number'],
+             }
+           : {
+@@ -1156,9 +1279,11 @@ class TransactionProvider extends ChangeNotifier {
+ 
+     final optionalItems = (raw['items'] as List? ?? []).map((e) {
+       final itemId = e['item_id']?.toString() ?? '';
+-      final namaFromApi = e['item_name']?.toString() ?? e['nama']?.toString() ?? '';
++      final namaFromApi =
++          e['item_name']?.toString() ?? e['nama']?.toString() ?? '';
+       final namaFromMaster = _lookupMasterItemName(itemId);
+-      final resolvedName = (namaFromMaster != itemId && namaFromMaster.isNotEmpty)
++      final resolvedName =
++          (namaFromMaster != itemId && namaFromMaster.isNotEmpty)
+           ? namaFromMaster
+           : namaFromApi.isNotEmpty
+           ? namaFromApi
+@@ -1175,10 +1300,15 @@ class TransactionProvider extends ChangeNotifier {
+       ...raw,
+       'id': raw['tr_id']?.toString() ?? raw['id']?.toString(),
+       'invoice_number': raw['tr_id']?.toString() ?? raw['id']?.toString(),
+-      'kasir_name': raw['kasir_name']?.toString() ?? '-',
++      'kasir_name':
++          raw['kasir_name']?.toString() ??
++          raw['tr_userupdate']?.toString() ??
++          raw['updated_by']?.toString() ??
++          raw['created_by']?.toString(),
+       'order_status': raw['order_status'] ?? raw['status_order'],
+       'payment_status': raw['payment_status'] ?? raw['status_pembayaran'],
+-      'total_price': raw['total_akhir'] ?? raw['total_price'] ?? raw['total_kotor'] ?? 0,
++      'total_price':
++          raw['total_akhir'] ?? raw['total_price'] ?? raw['total_kotor'] ?? 0,
+       'potongan_diskon': raw['potongan_diskon'] ?? 0,
+       'rounding_amount': raw['rounding_amount'] ?? raw['tr_rounding'] ?? 0,
+       'total_kotor': raw['total_kotor'] ?? 0,
+diff --git a/lib/screens/home/home_screen.dart b/lib/screens/home/home_screen.dart
+index 34154bb..7f34f34 100644
+--- a/lib/screens/home/home_screen.dart
++++ b/lib/screens/home/home_screen.dart
+@@ -1,6 +1,7 @@
+ // lib/screens/home/home_screen.dart
+ 
+ import 'package:ayocucinew/providers/app_provider.dart';
++import 'package:ayocucinew/providers/content_provider.dart';
+ import 'package:ayocucinew/providers/transaction_provider.dart';
+ // Tambahkan ini
+ import 'package:ayocucinew/screens/home/widgets/custom_buttom_nav.dart';
+@@ -40,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
+ 
+       // Tarik semua data (Profile, Summary, & Notif) secara paralel
+       appProv.fetchAppData(force: true);
++      context.read<ContentProvider>().fetchContent();
+     });
+   }
+ 
+@@ -141,7 +143,12 @@ class _HomeScreenState extends State<HomeScreen> {
+                           color: const Color(0xFFFF604E),
+                           backgroundColor: Colors.white,
+                           // 2. Trigger Refresh Total (Profile, Summary, Notif)
+-                          onRefresh: () => context.read<AppProvider>().fetchAppData(force: true),
++                          onRefresh: () async {
++                            await Future.wait([
++                              context.read<AppProvider>().fetchAppData(force: true),
++                              context.read<ContentProvider>().fetchContent(),
++                            ]);
++                          },
+                           child: SingleChildScrollView(
+                             physics: const AlwaysScrollableScrollPhysics(),
+                             padding: EdgeInsets.symmetric(horizontal: isTablet ? 20 : 0),
+diff --git a/lib/screens/home/notification_detail_screen.dart b/lib/screens/home/notification_detail_screen.dart
+index ec8b3d7..18dfee4 100644
+--- a/lib/screens/home/notification_detail_screen.dart
++++ b/lib/screens/home/notification_detail_screen.dart
+@@ -1,6 +1,7 @@
+ import 'package:flutter/material.dart';
+ import 'package:intl/intl.dart';
+ import '../../data/models/notif_model.dart';
++import '../../core/utils/api_client.dart';
+ 
+ class NotificationDetailScreen extends StatelessWidget {
+   final NotifModel notif;
+@@ -11,26 +12,26 @@ class NotificationDetailScreen extends StatelessWidget {
+     switch (category.toUpperCase()) {
+       case 'PROMO':
+         return {
+-          'icon': Icons.local_offer_rounded,
+-          'color': const Color(0xFFFFD700),
+-          'bg': const Color(0xFFFFFDE7),
++          'asset': 'assets/icons/notification/Promo.png',
++          'color': const Color(0xFFFF4500),
++          'bg': const Color(0xFFFFEBE8),
+         };
+       case 'INFO':
+         return {
+-          'icon': Icons.info_outline_rounded,
+-          'color': const Color(0xFF2196F3),
+-          'bg': const Color(0xFFE3F2FD),
++          'asset': 'assets/icons/notification/Notif.png',
++          'color': const Color(0xFFFF4500),
++          'bg': const Color(0xFFFFEBE8),
+         };
+       case 'SYSTEM':
+       case 'ANNOUNCEMENT':
+         return {
+-          'icon': Icons.campaign_rounded,
++          'asset': 'assets/icons/notification/Notif.png',
+           'color': const Color(0xFFFF4500),
+           'bg': const Color(0xFFFFEBE8),
+         };
+       default:
+         return {
+-          'icon': Icons.notifications_none_rounded,
++          'asset': 'assets/icons/notification/Notif.png',
+           'color': Colors.grey,
+           'bg': const Color(0xFFF1F3F5),
+         };
+@@ -40,13 +41,15 @@ class NotificationDetailScreen extends StatelessWidget {
+   @override
+   Widget build(BuildContext context) {
+     final style = _getCategoryStyle(notif.kategori);
++    final imageUrl = _resolveImageUrl(notif.imageUrl);
+ 
+     return Scaffold(
+       backgroundColor: Colors.white,
+       appBar: AppBar(
+         backgroundColor: Colors.white,
+-        elevation: 0.5,
++        elevation: 0,
+         foregroundColor: Colors.black,
++        centerTitle: true,
+         title: const Text(
+           "Detail Notifikasi",
+           style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+@@ -54,68 +57,86 @@ class NotificationDetailScreen extends StatelessWidget {
+       ),
+       body: SingleChildScrollView(
+         // Padding bottom besar supaya konten tidak tertutup floating pill
+-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 140),
++        padding: const EdgeInsets.fromLTRB(24, 20, 24, 140),
+         child: Column(
+           crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+             Row(
+               children: [
+                 Container(
+-                  padding: const EdgeInsets.all(10),
++                  height: 44,
++                  width: 44,
++                  padding: const EdgeInsets.all(12),
+                   decoration: BoxDecoration(
+                     color: style['bg'],
+                     borderRadius: BorderRadius.circular(12),
+                   ),
+-                  child: Icon(style['icon'], color: style['color'], size: 24),
++                  child: Image.asset(
++                    style['asset'] as String,
++                    fit: BoxFit.contain,
++                    errorBuilder: (_, __, ___) => Icon(
++                      Icons.notifications_none_rounded,
++                      color: style['color'],
++                      size: 20,
++                    ),
++                  ),
+                 ),
+                 const SizedBox(width: 16),
+-                Column(
+-                  crossAxisAlignment: CrossAxisAlignment.start,
+-                  children: [
+-                    Text(
+-                      notif.kategori.toUpperCase(),
+-                      style: TextStyle(
+-                        color: style['color'],
+-                        fontWeight: FontWeight.w900,
+-                        fontSize: 12,
+-                        letterSpacing: 1.2,
++                Expanded(
++                  child: Column(
++                    crossAxisAlignment: CrossAxisAlignment.start,
++                    children: [
++                      Text(
++                        notif.judul.toUpperCase(),
++                        style: TextStyle(
++                          color: style['color'],
++                          fontWeight: FontWeight.w900,
++                          fontSize: 13,
++                          letterSpacing: 1.4,
++                        ),
++                        maxLines: 2,
++                        overflow: TextOverflow.ellipsis,
+                       ),
+-                    ),
+-                    const SizedBox(height: 4),
+-                    Text(
+-                      DateFormat(
+-                        'dd MMMM yyyy, HH:mm',
+-                        'id_ID',
+-                      ).format(notif.createdAt),
+-                      style: TextStyle(
+-                        color: Colors.grey[500],
+-                        fontSize: 12,
+-                        fontWeight: FontWeight.w500,
++                      const SizedBox(height: 5),
++                      Text(
++                        DateFormat(
++                          'dd MMMM yyyy, HH:mm',
++                          'id_ID',
++                        ).format(notif.createdAt),
++                        style: TextStyle(
++                          color: Colors.grey[500],
++                          fontSize: 12,
++                          fontWeight: FontWeight.w600,
++                        ),
+                       ),
+-                    ),
+-                  ],
++                    ],
++                  ),
+                 ),
+               ],
+             ),
+             const Padding(
+-              padding: EdgeInsets.symmetric(vertical: 24),
++              padding: EdgeInsets.symmetric(vertical: 28),
+               child: Divider(thickness: 1, color: Color(0xFFF1F3F5)),
+             ),
+-            Text(
+-              notif.judul,
+-              style: const TextStyle(
+-                fontWeight: FontWeight.w900,
+-                fontSize: 22,
+-                color: Colors.black,
+-                height: 1.3,
++            if (imageUrl != null) ...[
++              ClipRRect(
++                borderRadius: BorderRadius.circular(16),
++                child: AspectRatio(
++                  aspectRatio: 1.95,
++                  child: Image.network(
++                    imageUrl,
++                    fit: BoxFit.cover,
++                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
++                  ),
++                ),
+               ),
+-            ),
+-            const SizedBox(height: 16),
++              const SizedBox(height: 20),
++            ],
+             Text(
+               notif.pesan,
+               style: TextStyle(
+                 fontSize: 15,
+-                height: 1.8,
++                height: 1.72,
+                 color: Colors.grey[800],
+                 letterSpacing: 0.3,
+               ),
+@@ -149,4 +170,10 @@ class NotificationDetailScreen extends StatelessWidget {
+       ),
+     );
+   }
++
++  String? _resolveImageUrl(String? path) {
++    if (path == null || path.isEmpty) return null;
++    if (path.startsWith('http')) return path;
++    return '${ApiClient.plainUrl}$path';
++  }
+ }
+diff --git a/lib/screens/home/notification_screen.dart b/lib/screens/home/notification_screen.dart
+index 39cd917..cee8e69 100644
+--- a/lib/screens/home/notification_screen.dart
++++ b/lib/screens/home/notification_screen.dart
+@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
+ import 'package:intl/intl.dart';
+ import '../../providers/notification_provider.dart';
+ import '../../data/models/notif_model.dart';
++import '../../core/utils/api_client.dart';
+ import '../../shared/widgets/empty_state_widget.dart';
+ import 'notification_detail_screen.dart'; // Import screen detail baru
+ 
+@@ -16,6 +17,8 @@ class NotificationScreen extends StatefulWidget {
+ class _NotificationScreenState extends State<NotificationScreen> {
+   int _activeTab = 0;
+   String _searchQuery = "";
++  bool _isSelectionMode = false;
++  Set<int> _selectedIds = {};
+ 
+   @override
+   void initState() {
+@@ -29,25 +32,29 @@ class _NotificationScreenState extends State<NotificationScreen> {
+     switch (category.toUpperCase()) {
+       case 'PROMO':
+         return {
++          'asset': 'assets/icons/notification/Promo.png',
+           'icon': Icons.local_offer_rounded,
+-          'color': const Color(0xFFFFD700),
+-          'bg': const Color(0xFFFFFDE7),
++          'color': const Color(0xFFFF4500),
++          'bg': const Color(0xFFFFEBE8),
+         };
+       case 'INFO':
+         return {
+-          'icon': Icons.info_outline_rounded,
+-          'color': const Color(0xFF2196F3),
+-          'bg': const Color(0xFFE3F2FD),
++          'asset': 'assets/icons/notification/Notif.png',
++          'icon': Icons.notifications_none_rounded,
++          'color': const Color(0xFFFF4500),
++          'bg': const Color(0xFFFFEBE8),
+         };
+       case 'SYSTEM':
+       case 'ANNOUNCEMENT':
+         return {
++          'asset': 'assets/icons/notification/Notif.png',
+           'icon': Icons.campaign_rounded,
+           'color': const Color(0xFFFF4500),
+           'bg': const Color(0xFFFFEBE8),
+         };
+       default:
+         return {
++          'asset': 'assets/icons/notification/Notif.png',
+           'icon': Icons.notifications_none_rounded,
+           'color': Colors.grey,
+           'bg': const Color(0xFFF1F3F5),
+@@ -115,6 +122,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
+           ),
+         ],
+       ),
++      bottomNavigationBar: _isSelectionMode ? _buildSelectionActionBar() : null,
+     );
+   }
+ 
+@@ -128,17 +136,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
+         style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+       ),
+       actions: [
+-        TextButton.icon(
+-          onPressed: () => context.read<NotificationProvider>().markAllRead(),
+-          icon: const Icon(
+-            Icons.done_all_rounded,
+-            size: 18,
+-            color: Color(0xFFFF4500),
+-          ),
+-          label: const Text(
+-            "Baca Semua",
++        TextButton(
++          onPressed: _toggleSelectAllVisible,
++          child: Text(
++            _isSelectionMode && _allVisibleSelected() ? "Batal" : "Pilih semua",
+             style: TextStyle(
+-              color: Color(0xFFFF4500),
++              color: Colors.black87,
+               fontWeight: FontWeight.bold,
+               fontSize: 12,
+             ),
+@@ -210,11 +213,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
+   }
+ 
+   Widget _buildGroupedList(Map<String, List<NotifModel>> grouped) {
++    final bottomPadding = _isSelectionMode ? 92.0 : 16.0;
+     return RefreshIndicator(
+       onRefresh: () =>
+           context.read<NotificationProvider>().fetchNotifications(),
+       child: ListView.builder(
+-        padding: const EdgeInsets.all(16),
++        padding: EdgeInsets.fromLTRB(16, 16, 16, bottomPadding),
+         itemCount: grouped.keys.length,
+         itemBuilder: (context, index) {
+           String dateKey = grouped.keys.elementAt(index);
+@@ -244,116 +248,323 @@ class _NotificationScreenState extends State<NotificationScreen> {
+ 
+   Widget _buildNotifCard(NotifModel notif) {
+     final style = _getCategoryStyle(notif.kategori);
++    final imageUrl = _resolveImageUrl(notif.imageUrl);
++    final isSelected = _selectedIds.contains(notif.id);
+ 
+-    return Container(
+-      margin: const EdgeInsets.only(bottom: 12),
+-      decoration: BoxDecoration(
+-        color: Colors.white,
+-        borderRadius: BorderRadius.circular(16),
+-        boxShadow: [
+-          BoxShadow(
+-            color: Colors.black.withOpacity(0.02),
+-            blurRadius: 10,
+-            offset: const Offset(0, 4),
++    return Row(
++      crossAxisAlignment: CrossAxisAlignment.start,
++      children: [
++        if (_isSelectionMode)
++          Padding(
++            padding: const EdgeInsets.only(top: 18, right: 8),
++            child: _buildSelectionCircle(isSelected),
+           ),
+-        ],
+-      ),
+-      child: Material(
+-        color: Colors.transparent,
+-        child: InkWell(
+-          borderRadius: BorderRadius.circular(16),
+-          onTap: () {
+-            context.read<NotificationProvider>().markAsRead(notif.id);
+-            // PINDAH KE SCREEN DETAIL BARU
+-            Navigator.push(
+-              context,
+-              MaterialPageRoute(
+-                builder: (context) => NotificationDetailScreen(notif: notif),
+-              ),
+-            );
+-          },
+-          child: Padding(
+-            padding: const EdgeInsets.all(14),
+-            child: Row(
+-              crossAxisAlignment: CrossAxisAlignment.start,
+-              children: [
+-                Container(
+-                  height: 44,
+-                  width: 44,
+-                  decoration: BoxDecoration(
+-                    color: style['bg'],
+-                    borderRadius: BorderRadius.circular(12),
+-                  ),
+-                  child: Icon(style['icon'], color: style['color'], size: 22),
++        Expanded(
++          child: Container(
++            margin: const EdgeInsets.only(bottom: 12),
++            decoration: BoxDecoration(
++              color: Colors.white,
++              borderRadius: BorderRadius.circular(16),
++              boxShadow: [
++                BoxShadow(
++                  color: Colors.black.withOpacity(0.02),
++                  blurRadius: 10,
++                  offset: const Offset(0, 4),
+                 ),
+-                const SizedBox(width: 12),
+-                Expanded(
++              ],
++            ),
++            child: Material(
++              color: Colors.transparent,
++              child: InkWell(
++                borderRadius: BorderRadius.circular(16),
++                onLongPress: () => _enterSelection(notif.id),
++                onTap: () {
++                  if (_isSelectionMode) {
++                    _toggleSelected(notif.id);
++                    return;
++                  }
++                  context.read<NotificationProvider>().markAsRead(notif.id);
++                  // PINDAH KE SCREEN DETAIL BARU
++                  Navigator.push(
++                    context,
++                    MaterialPageRoute(
++                      builder: (context) =>
++                          NotificationDetailScreen(notif: notif),
++                    ),
++                  );
++                },
++                child: Padding(
++                  padding: const EdgeInsets.all(14),
+                   child: Column(
+-                    crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+-                      Text(
+-                        notif.judul,
+-                        style: TextStyle(
+-                          fontWeight: notif.status == 0
+-                              ? FontWeight.w900
+-                              : FontWeight.bold,
+-                          fontSize: 14,
+-                        ),
+-                        maxLines: 1,
+-                        overflow: TextOverflow.ellipsis,
++                      Row(
++                        crossAxisAlignment: CrossAxisAlignment.start,
++                        children: [
++                          Container(
++                            height: 44,
++                            width: 44,
++                            decoration: BoxDecoration(
++                              color: style['bg'],
++                              borderRadius: BorderRadius.circular(12),
++                            ),
++                            child: Padding(
++                              padding: const EdgeInsets.all(12),
++                              child: Image.asset(
++                                style['asset'] as String,
++                                fit: BoxFit.contain,
++                                errorBuilder: (_, __, ___) => Icon(
++                                  style['icon'],
++                                  color: style['color'],
++                                  size: 22,
++                                ),
++                              ),
++                            ),
++                          ),
++                          const SizedBox(width: 12),
++                          Expanded(
++                            child: Column(
++                              crossAxisAlignment: CrossAxisAlignment.start,
++                              children: [
++                                Text(
++                                  notif.judul,
++                                  style: TextStyle(
++                                    fontWeight: notif.status == 0
++                                        ? FontWeight.w900
++                                        : FontWeight.bold,
++                                    fontSize: 14,
++                                    color: const Color(0xFFFF4500),
++                                  ),
++                                  maxLines: 1,
++                                  overflow: TextOverflow.ellipsis,
++                                ),
++                                const SizedBox(height: 4),
++                                Text(
++                                  notif.pesan,
++                                  maxLines: 2,
++                                  overflow: TextOverflow.ellipsis,
++                                  style: TextStyle(
++                                    fontSize: 12,
++                                    color: Colors.grey[600],
++                                    height: 1.3,
++                                  ),
++                                ),
++                              ],
++                            ),
++                          ),
++                          const SizedBox(width: 12),
++                          Column(
++                            crossAxisAlignment: CrossAxisAlignment.end,
++                            children: [
++                              Text(
++                                DateFormat('HH:mm').format(notif.createdAt),
++                                style: const TextStyle(
++                                  fontSize: 11,
++                                  fontWeight: FontWeight.w900,
++                                  color: Colors.black87,
++                                ),
++                              ),
++                              const SizedBox(height: 2),
++                              Text(
++                                DateFormat('dd MMM').format(notif.createdAt),
++                                style: TextStyle(
++                                  fontSize: 9,
++                                  fontWeight: FontWeight.bold,
++                                  color: Colors.grey[400],
++                                ),
++                              ),
++                              if (notif.status == 0 && !_isSelectionMode)
++                                Container(
++                                  margin: const EdgeInsets.only(top: 8),
++                                  height: 7,
++                                  width: 7,
++                                  decoration: const BoxDecoration(
++                                    color: Color(0xFFFF4500),
++                                    shape: BoxShape.circle,
++                                  ),
++                                ),
++                            ],
++                          ),
++                        ],
+                       ),
+-                      const SizedBox(height: 4),
+-                      Text(
+-                        notif.pesan,
+-                        maxLines: 2,
+-                        overflow: TextOverflow.ellipsis,
+-                        style: TextStyle(
+-                          fontSize: 12,
+-                          color: Colors.grey[600],
+-                          height: 1.3,
++                      if (imageUrl != null) ...[
++                        const SizedBox(height: 12),
++                        ClipRRect(
++                          borderRadius: BorderRadius.circular(12),
++                          child: AspectRatio(
++                            aspectRatio: 16 / 9,
++                            child: Image.network(
++                              imageUrl,
++                              fit: BoxFit.cover,
++                              errorBuilder: (_, __, ___) =>
++                                  const SizedBox.shrink(),
++                            ),
++                          ),
+                         ),
+-                      ),
+-                    ],
+-                  ),
+-                ),
+-                const SizedBox(width: 12),
+-                Column(
+-                  crossAxisAlignment: CrossAxisAlignment.end,
+-                  children: [
+-                    Text(
+-                      DateFormat('HH:mm').format(notif.createdAt),
+-                      style: const TextStyle(
+-                        fontSize: 11,
+-                        fontWeight: FontWeight.w900,
+-                        color: Colors.black87,
+-                      ),
++                      ],
++                    ]
+                     ),
+-                    const SizedBox(height: 2),
+-                    Text(
+-                      DateFormat('dd MMM').format(notif.createdAt),
+-                      style: TextStyle(
+-                        fontSize: 9,
+-                        fontWeight: FontWeight.bold,
+-                        color: Colors.grey[400],
+-                      ),
+-                    ),
+-                    if (notif.status == 0)
+-                      Container(
+-                        margin: const EdgeInsets.only(top: 8),
+-                        height: 7,
+-                        width: 7,
+-                        decoration: const BoxDecoration(
+-                          color: Color(0xFFFF4500),
+-                          shape: BoxShape.circle,
+-                        ),
+-                      ),
+-                  ],
++                  ),
+                 ),
+-              ],
++              ),
+             ),
+           ),
++      ],
++      );
++
++  }
++
++  Widget _buildSelectionCircle(bool selected) {
++    return AnimatedContainer(
++      duration: const Duration(milliseconds: 160),
++      height: 18,
++      width: 18,
++      decoration: BoxDecoration(
++        shape: BoxShape.circle,
++        color: selected ? const Color(0xFFFF4500) : Colors.white,
++        border: Border.all(
++          color: selected ? const Color(0xFFFF4500) : const Color(0xFFCED4DA),
++          width: 1.3,
++        ),
++      ),
++      child: selected
++          ? const Icon(Icons.check_rounded, size: 13, color: Colors.white)
++          : null,
++    );
++  }
++
++  Widget _buildSelectionActionBar() {
++    return SafeArea(
++      top: false,
++      child: Container(
++        height: 72,
++        decoration: const BoxDecoration(
++          color: Colors.white,
++          border: Border(top: BorderSide(color: Color(0xFFF1F3F5))),
++        ),
++        child: Row(
++          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
++          children: [
++            _buildActionItem(
++              icon: Icons.visibility_rounded,
++              label: "Tandai dibaca",
++              onTap: _selectedIds.isEmpty ? null : _markSelectedRead,
++            ),
++            _buildActionItem(
++              icon: Icons.delete_outline_rounded,
++              label: "Hapus notifikasi",
++              onTap: _selectedIds.isEmpty ? null : _deleteSelected,
++            ),
++          ],
++        ),
++      ),
++    );
++  }
++
++  Widget _buildActionItem({
++    required IconData icon,
++    required String label,
++    required VoidCallback? onTap,
++  }) {
++    final enabled = onTap != null;
++    return InkWell(
++      onTap: onTap,
++      borderRadius: BorderRadius.circular(12),
++      child: Padding(
++        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
++        child: Column(
++          mainAxisSize: MainAxisSize.min,
++          children: [
++            Icon(
++              icon,
++              size: 22,
++              color: enabled ? Colors.black : Colors.grey[300],
++            ),
++            const SizedBox(height: 5),
++            Text(
++              label,
++              style: TextStyle(
++                fontSize: 11,
++                fontWeight: FontWeight.w700,
++                color: enabled ? Colors.black : Colors.grey[300],
++              ),
++            ),
++          ],
+         ),
+       ),
+     );
+   }
++
++  List<NotifModel> _visibleNotifications() {
++    final notifications = context.read<NotificationProvider>().notifications;
++    return notifications.where((n) {
++      final matchesTab = _activeTab == 0 || n.status == 0;
++      final matchesSearch =
++          n.judul.toLowerCase().contains(_searchQuery.toLowerCase()) ||
++          n.pesan.toLowerCase().contains(_searchQuery.toLowerCase());
++      return matchesTab && matchesSearch;
++    }).toList();
++  }
++
++  void _enterSelection(int id) {
++    setState(() {
++      _isSelectionMode = true;
++      _selectedIds = {id};
++    });
++  }
++
++  void _toggleSelected(int id) {
++    setState(() {
++      if (_selectedIds.contains(id)) {
++        _selectedIds.remove(id);
++      } else {
++        _selectedIds.add(id);
++      }
++      if (_selectedIds.isEmpty) _isSelectionMode = false;
++    });
++  }
++
++  void _toggleSelectAllVisible() {
++    final visibleIds = _visibleNotifications().map((n) => n.id).toSet();
++    if (visibleIds.isEmpty) return;
++    setState(() {
++      if (_isSelectionMode && _selectedIds.containsAll(visibleIds)) {
++        _isSelectionMode = false;
++        _selectedIds.clear();
++      } else {
++        _isSelectionMode = true;
++        _selectedIds = visibleIds;
++      }
++    });
++  }
++
++  bool _allVisibleSelected() {
++    final visibleIds = _visibleNotifications().map((n) => n.id).toSet();
++    return visibleIds.isNotEmpty && _selectedIds.containsAll(visibleIds);
++  }
++
++  Future<void> _markSelectedRead() async {
++    final ids = Set<int>.from(_selectedIds);
++    await context.read<NotificationProvider>().markSelectedRead(ids);
++    if (!mounted) return;
++    setState(() {
++      _selectedIds.clear();
++      _isSelectionMode = false;
++    });
++  }
++
++  Future<void> _deleteSelected() async {
++    final ids = Set<int>.from(_selectedIds);
++    await context.read<NotificationProvider>().deleteSelected(ids);
++    if (!mounted) return;
++    setState(() {
++      _selectedIds.clear();
++      _isSelectionMode = false;
++    });
++  }
++
++  String? _resolveImageUrl(String? path) {
++    if (path == null || path.isEmpty) return null;
++    if (path.startsWith('http')) return path;
++    return '${ApiClient.plainUrl}$path';
++  }
+ }
+diff --git a/lib/screens/home/widgets/info_slider.dart b/lib/screens/home/widgets/info_slider.dart
+index 53ed730..ff11aa0 100644
+--- a/lib/screens/home/widgets/info_slider.dart
++++ b/lib/screens/home/widgets/info_slider.dart
+@@ -1,4 +1,9 @@
+ import 'package:flutter/material.dart';
++import 'package:provider/provider.dart';
++import '../../../core/utils/api_client.dart';
++import '../../../data/models/content_banner_model.dart';
++import '../../../providers/content_provider.dart';
++import '../content_detail_screen.dart';
+ 
+ class InfoSlider extends StatefulWidget {
+   const InfoSlider({super.key});
+@@ -11,66 +16,108 @@ class _InfoSliderState extends State<InfoSlider> {
+   final PageController _pageController = PageController();
+   int _currentPage = 0;
+ 
+-  final List<String> _infoImages = ['assets/images/info1.png', 'assets/images/info2.png'];
+-
+   @override
+   void dispose() {
+     _pageController.dispose();
+     super.dispose();
+   }
+ 
++  @override
++  Widget build(BuildContext context) {
++    return Consumer<ContentProvider>(
++      builder: (context, provider, _) {
++        final infos = provider.infos;
++        if (infos.isEmpty) return const SizedBox.shrink();
++        return _InfoContentSlider(
++          items: infos,
++          pageController: _pageController,
++          currentPage: _currentPage.clamp(0, infos.length - 1),
++          onPageChanged: (index) => setState(() => _currentPage = index),
++        );
++      },
++    );
++  }
++}
++
++class _InfoContentSlider extends StatelessWidget {
++  final List<ContentBannerModel> items;
++  final PageController pageController;
++  final int currentPage;
++  final ValueChanged<int> onPageChanged;
++
++  const _InfoContentSlider({
++    required this.items,
++    required this.pageController,
++    required this.currentPage,
++    required this.onPageChanged,
++  });
++
+   @override
+   Widget build(BuildContext context) {
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+-        // Label Section "Informasi" bergaya Pill
+         Padding(
+           padding: const EdgeInsets.symmetric(horizontal: 20),
+           child: Container(
+             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+-            decoration: BoxDecoration(color: const Color(0xFFFFF1F0), borderRadius: BorderRadius.circular(10)),
++            decoration: BoxDecoration(
++              color: const Color(0xFFFFF1F0),
++              borderRadius: BorderRadius.circular(10),
++            ),
+             child: const Text(
+               'Informasi',
+-              style: TextStyle(color: Color(0xFFFF5F4E), fontSize: 12, fontWeight: FontWeight.bold),
++              style: TextStyle(
++                color: Color(0xFFFF5F4E),
++                fontSize: 12,
++                fontWeight: FontWeight.bold,
++              ),
+             ),
+           ),
+         ),
+         const SizedBox(height: 12),
+-        // Manual Slider Informasi
+         SizedBox(
+           height: 160,
+           child: PageView.builder(
+-            controller: _pageController,
+-            onPageChanged: (index) {
+-              setState(() {
+-                _currentPage = index;
+-              });
+-            },
+-            itemCount: _infoImages.length,
++            controller: pageController,
++            onPageChanged: onPageChanged,
++            itemCount: items.length,
+             itemBuilder: (context, index) {
+-              return Container(
+-                margin: const EdgeInsets.symmetric(horizontal: 20),
+-                decoration: BoxDecoration(
+-                  borderRadius: BorderRadius.circular(15),
+-                  image: DecorationImage(image: AssetImage(_infoImages[index]), fit: BoxFit.cover),
++              final item = items[index];
++              return GestureDetector(
++                onTap: () => Navigator.push(
++                  context,
++                  MaterialPageRoute(
++                    builder: (_) => ContentDetailScreen(content: item),
++                  ),
++                ),
++                child: Container(
++                  margin: const EdgeInsets.symmetric(horizontal: 20),
++                  decoration: BoxDecoration(
++                    borderRadius: BorderRadius.circular(15),
++                    image: DecorationImage(
++                      image: NetworkImage(_resolveImageUrl(item.imageUrl)),
++                      fit: BoxFit.cover,
++                    ),
++                  ),
+                 ),
+               );
+             },
+           ),
+         ),
+         const SizedBox(height: 12),
+-        // Dot Indicator
+         Row(
+           mainAxisAlignment: MainAxisAlignment.center,
+           children: List.generate(
+-            _infoImages.length,
++            items.length,
+             (index) => Container(
+               margin: const EdgeInsets.symmetric(horizontal: 4),
+-              width: _currentPage == index ? 24 : 8,
++              width: currentPage == index ? 24 : 8,
+               height: 8,
+               decoration: BoxDecoration(
+-                color: _currentPage == index ? const Color(0xFFFF5F4E) : const Color(0xFFFFCCC7),
++                color: currentPage == index
++                    ? const Color(0xFFFF5F4E)
++                    : const Color(0xFFFFCCC7),
+                 borderRadius: BorderRadius.circular(4),
+               ),
+             ),
+@@ -79,4 +126,9 @@ class _InfoSliderState extends State<InfoSlider> {
+       ],
+     );
+   }
++
++  String _resolveImageUrl(String path) {
++    if (path.startsWith('http')) return path;
++    return '${ApiClient.plainUrl}$path';
++  }
+ }
+diff --git a/lib/screens/home/widgets/promo_slider.dart b/lib/screens/home/widgets/promo_slider.dart
+index 716b64f..a749fcc 100644
+--- a/lib/screens/home/widgets/promo_slider.dart
++++ b/lib/screens/home/widgets/promo_slider.dart
+@@ -1,5 +1,10 @@
+-import 'package:flutter/material.dart';
+ import 'dart:async';
++import 'package:flutter/material.dart';
++import 'package:provider/provider.dart';
++import '../../../core/utils/api_client.dart';
++import '../../../data/models/content_banner_model.dart';
++import '../../../providers/content_provider.dart';
++import '../content_detail_screen.dart';
+ 
+ class PromoSlider extends StatefulWidget {
+   const PromoSlider({super.key});
+@@ -13,29 +18,18 @@ class _PromoSliderState extends State<PromoSlider> {
+   int _currentPage = 0;
+   Timer? _timer;
+ 
+-  final List<String> _promoImages = ['assets/images/promo1.png', 'assets/images/promo2.png'];
+-
+   @override
+   void initState() {
+     super.initState();
+-    _startAutoSlide();
+-  }
+-
+-  void _startAutoSlide() {
+-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+-      if (_currentPage < _promoImages.length - 1) {
+-        _currentPage++;
+-      } else {
+-        _currentPage = 0;
+-      }
+-
+-      if (_pageController.hasClients) {
+-        _pageController.animateToPage(
+-          _currentPage,
+-          duration: const Duration(milliseconds: 350),
+-          curve: Curves.easeInOut,
+-        );
+-      }
++    _timer = Timer.periodic(const Duration(seconds: 4), (_) {
++      final promos = context.read<ContentProvider>().promos;
++      if (promos.length < 2 || !_pageController.hasClients) return;
++      _currentPage = (_currentPage + 1) % promos.length;
++      _pageController.animateToPage(
++        _currentPage,
++        duration: const Duration(milliseconds: 350),
++        curve: Curves.easeInOut,
++      );
+     });
+   }
+ 
+@@ -46,58 +40,105 @@ class _PromoSliderState extends State<PromoSlider> {
+     super.dispose();
+   }
+ 
++  @override
++  Widget build(BuildContext context) {
++    return Consumer<ContentProvider>(
++      builder: (context, provider, _) {
++        final promos = provider.promos;
++        if (promos.isEmpty) return const SizedBox.shrink();
++        return _ContentSlider(
++          label: 'Promo',
++          items: promos,
++          pageController: _pageController,
++          currentPage: _currentPage.clamp(0, promos.length - 1),
++          onPageChanged: (index) => setState(() => _currentPage = index),
++        );
++      },
++    );
++  }
++}
++
++class _ContentSlider extends StatelessWidget {
++  final String label;
++  final List<ContentBannerModel> items;
++  final PageController pageController;
++  final int currentPage;
++  final ValueChanged<int> onPageChanged;
++
++  const _ContentSlider({
++    required this.label,
++    required this.items,
++    required this.pageController,
++    required this.currentPage,
++    required this.onPageChanged,
++  });
++
+   @override
+   Widget build(BuildContext context) {
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+-        // Label Section "Promo" bergaya Pill
+         Padding(
+           padding: const EdgeInsets.symmetric(horizontal: 20),
+           child: Container(
+             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+-            decoration: BoxDecoration(color: const Color(0xFFFFF1F0), borderRadius: BorderRadius.circular(10)),
+-            child: const Text(
+-              'Promo',
+-              style: TextStyle(color: Color(0xFFFF5F4E), fontSize: 12, fontWeight: FontWeight.bold),
++            decoration: BoxDecoration(
++              color: const Color(0xFFFFF1F0),
++              borderRadius: BorderRadius.circular(10),
++            ),
++            child: Text(
++              label,
++              style: const TextStyle(
++                color: Color(0xFFFF5F4E),
++                fontSize: 12,
++                fontWeight: FontWeight.bold,
++              ),
+             ),
+           ),
+         ),
+         const SizedBox(height: 12),
+-        // Auto Slider Promo
+         SizedBox(
+           height: 160,
+           child: PageView.builder(
+-            controller: _pageController,
+-            onPageChanged: (index) {
+-              setState(() {
+-                _currentPage = index;
+-              });
+-            },
+-            itemCount: _promoImages.length,
++            controller: pageController,
++            onPageChanged: onPageChanged,
++            itemCount: items.length,
+             itemBuilder: (context, index) {
+-              return Container(
+-                margin: const EdgeInsets.symmetric(horizontal: 20),
+-                decoration: BoxDecoration(
+-                  borderRadius: BorderRadius.circular(15),
+-                  image: DecorationImage(image: AssetImage(_promoImages[index]), fit: BoxFit.cover),
++              final item = items[index];
++              return GestureDetector(
++                onTap: () => Navigator.push(
++                  context,
++                  MaterialPageRoute(
++                    builder: (_) => ContentDetailScreen(content: item),
++                  ),
++                ),
++                child: Container(
++                  margin: const EdgeInsets.symmetric(horizontal: 20),
++                  decoration: BoxDecoration(
++                    borderRadius: BorderRadius.circular(15),
++                    image: DecorationImage(
++                      image: NetworkImage(_resolveImageUrl(item.imageUrl)),
++                      fit: BoxFit.cover,
++                    ),
++                  ),
+                 ),
+               );
+             },
+           ),
+         ),
+         const SizedBox(height: 12),
+-        // Dot Indicator
+         Row(
+           mainAxisAlignment: MainAxisAlignment.center,
+           children: List.generate(
+-            _promoImages.length,
++            items.length,
+             (index) => Container(
+               margin: const EdgeInsets.symmetric(horizontal: 4),
+-              width: _currentPage == index ? 24 : 8,
++              width: currentPage == index ? 24 : 8,
+               height: 8,
+               decoration: BoxDecoration(
+-                color: _currentPage == index ? const Color(0xFFFF5F4E) : const Color(0xFFFFCCC7),
++                color: currentPage == index
++                    ? const Color(0xFFFF5F4E)
++                    : const Color(0xFFFFCCC7),
+                 borderRadius: BorderRadius.circular(4),
+               ),
+             ),
+@@ -106,4 +147,9 @@ class _PromoSliderState extends State<PromoSlider> {
+       ],
+     );
+   }
++
++  String _resolveImageUrl(String path) {
++    if (path.startsWith('http')) return path;
++    return '${ApiClient.plainUrl}$path';
++  }
+ }
+diff --git a/lib/screens/report/widgets/summary_grid_section.dart b/lib/screens/report/widgets/summary_grid_section.dart
+index c5096f2..7958181 100644
+--- a/lib/screens/report/widgets/summary_grid_section.dart
++++ b/lib/screens/report/widgets/summary_grid_section.dart
+@@ -8,6 +8,10 @@ class SummaryGridSection extends StatelessWidget {
+ 
+   const SummaryGridSection({super.key, this.summary, required this.dateLabel});
+ 
++  static const _primary = Color(0xFFFF5F4E);
++  static const _ink = Color(0xFF262338);
++  static const _muted = Color(0xFF9A96A8);
++
+   @override
+   Widget build(BuildContext context) {
+     final currency = NumberFormat.currency(
+@@ -16,172 +20,99 @@ class SummaryGridSection extends StatelessWidget {
+       decimalDigits: 0,
+     );
+ 
+-    return Container(
+-      width: double.infinity,
+-      padding: const EdgeInsets.all(16),
+-      decoration: BoxDecoration(
+-        color: const Color(0xFFFFEBE8), // Peach background khas Ayo Cuci
+-        borderRadius: BorderRadius.circular(24), // Lebih rounded biar flawless
++    final items = [
++      _MetricData(
++        title: 'Total Penjualan',
++        value: currency.format(summary?.totalOmset ?? 0),
++        trend: summary?.omsetTrend ?? 0,
++        icon: Icons.payments_rounded,
+       ),
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          // Badge Tanggal di pojok kanan (Orange)
+-          Align(
+-            alignment: Alignment.centerRight,
+-            child: _buildBadgeDate(dateLabel),
+-          ),
+-          const SizedBox(height: 16),
+-
+-          // Baris 1: Penjualan & Pendapatan
+-          _buildRow(
+-            _buildItem(
+-              "TOTAL PENJUALAN",
+-              currency.format(summary?.totalOmset ?? 0),
+-              summary?.omsetTrend ?? 0,
+-              Icons.monetization_on,
+-            ),
+-            _buildItem(
+-              "PENDAPATAN",
+-              currency.format(summary?.totalIncome ?? 0),
+-              summary?.incomeTrend ?? 0,
+-              Icons.account_balance_wallet,
+-            ),
+-          ),
+-          const SizedBox(height: 12),
+-
+-          // Baris 2: Pengeluaran & Laba Rugi
+-          _buildRow(
+-            _buildItem(
+-              "PENGELUARAN",
+-              currency.format(summary?.totalExpense ?? 0),
+-              summary?.expenseTrend ?? 0,
+-              Icons.shopping_cart,
+-            ),
+-            _buildItem(
+-              "LABA/RUGI",
+-              currency.format(summary?.profitLoss ?? 0),
+-              summary?.profitLossTrend ?? 0,
+-              Icons.trending_up,
+-            ),
+-          ),
+-          const SizedBox(height: 12),
+-
+-          // Baris 3: Transaksi & Pesanan
+-          _buildRow(
+-            _buildItem(
+-              "TOTAL TRANSAKSI",
+-              "${summary?.totalTransaksi ?? 0}",
+-              summary?.transaksiTrend ?? 0,
+-              Icons.insert_chart_outlined_rounded,
+-            ),
+-            _buildItem(
+-              "PESANAN DIAMBIL",
+-              "${summary?.pesananDiambil ?? 0}",
+-              summary?.pesananTrend ?? 0,
+-              Icons.check_circle_outline_rounded,
+-            ),
+-          ),
+-
+-          const SizedBox(height: 16),
+-          _buildInfoFooter(),
+-        ],
++      _MetricData(
++        title: 'Pendapatan',
++        value: currency.format(summary?.totalIncome ?? 0),
++        trend: summary?.incomeTrend ?? 0,
++        icon: Icons.account_balance_wallet_rounded,
+       ),
+-    );
+-  }
+-
+-  Widget _buildRow(Widget left, Widget right) {
+-    return Row(
+-      children: [
+-        Expanded(child: left),
+-        const SizedBox(width: 12),
+-        Expanded(child: right),
+-      ],
+-    );
+-  }
+-
+-  Widget _buildItem(String title, String value, double trend, IconData icon) {
+-    bool isPositive = trend >= 0;
+-    String trendText = trend == 0
+-        ? "0.0%"
+-        : "${trend > 0 ? '+' : ''}${trend.toStringAsFixed(1)}%";
++      _MetricData(
++        title: 'Pengeluaran',
++        value: currency.format(summary?.totalExpense ?? 0),
++        trend: summary?.expenseTrend ?? 0,
++        icon: Icons.shopping_cart_rounded,
++      ),
++      _MetricData(
++        title: 'Laba/Rugi',
++        value: currency.format(summary?.profitLoss ?? 0),
++        trend: summary?.profitLossTrend ?? 0,
++        icon: Icons.trending_up_rounded,
++      ),
++      _MetricData(
++        title: 'Total Transaksi',
++        value: '${summary?.totalTransaksi ?? 0}',
++        trend: summary?.transaksiTrend ?? 0,
++        icon: Icons.insert_chart_rounded,
++      ),
++      _MetricData(
++        title: 'Pesanan Diambil',
++        value: '${summary?.pesananDiambil ?? 0}',
++        trend: summary?.pesananTrend ?? 0,
++        icon: Icons.task_alt_rounded,
++      ),
++    ];
+ 
+     return Container(
+-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
++      width: double.infinity,
++      padding: const EdgeInsets.fromLTRB(15, 15, 15, 8),
+       decoration: BoxDecoration(
+-        color: Colors.white,
+-        borderRadius: BorderRadius.circular(16), // Rounded sudut putih
++        gradient: const LinearGradient(
++          begin: Alignment.topLeft,
++          end: Alignment.bottomRight,
++          colors: [Color(0xFFFFF0ED), Color(0xFFFFE2DE)],
++        ),
++        borderRadius: BorderRadius.circular(24),
++        border: Border.all(color: Colors.white.withOpacity(0.72)),
++        boxShadow: [
++          BoxShadow(
++            color: _primary.withOpacity(0.08),
++            blurRadius: 22,
++            offset: const Offset(0, 12),
++          ),
++        ],
+       ),
+-      child: Row(
++      child: Column(
+         children: [
+-          // Icon Box
+-          Container(
+-            padding: const EdgeInsets.all(7),
+-            decoration: BoxDecoration(
+-              color: const Color(0xFFFFEBE8),
+-              borderRadius: BorderRadius.circular(10),
+-            ),
+-            child: Icon(icon, size: 18, color: const Color(0xFFEB5757)),
+-          ),
+-          const SizedBox(width: 8),
+-          Expanded(
+-            child: Column(
+-              crossAxisAlignment: CrossAxisAlignment.start,
+-              children: [
+-                // Title + Trend Badge
+-                FittedBox(
+-                  fit: BoxFit.scaleDown,
+-                  child: Row(
+-                    children: [
+-                      Text(
+-                        title,
+-                        style: const TextStyle(
+-                          fontSize: 10,
+-                          color: Color(0xFF828282), // Grey label
+-                          fontWeight: FontWeight.w600,
+-                        ),
+-                      ),
+-                      const SizedBox(width: 8),
+-                      // Trend Badge dengan background transparan (Sesuai Desain)
+-                      Container(
+-                        padding: const EdgeInsets.symmetric(
+-                          horizontal: 4,
+-                          vertical: 1,
+-                        ),
+-                        decoration: BoxDecoration(
+-                          color: isPositive
+-                              ? const Color(0xFF27AE60).withOpacity(0.1)
+-                              : const Color(0xFFEB5757).withOpacity(0.1),
+-                          borderRadius: BorderRadius.circular(4),
+-                        ),
+-                        child: Text(
+-                          trendText,
+-                          style: TextStyle(
+-                            fontSize: 9,
+-                            color: isPositive
+-                                ? const Color(0xFF27AE60)
+-                                : const Color(0xFFEB5757),
+-                            fontWeight: FontWeight.bold,
+-                          ),
+-                        ),
+-                      ),
+-                    ],
+-                  ),
+-                ),
+-                const SizedBox(height: 4),
+-                // Nilai Angka/Rupiah
+-                Text(
+-                  value,
+-                  style: const TextStyle(
++          Row(
++            children: [
++              const Expanded(
++                child: Text(
++                  'Ringkasan Hari Ini',
++                  maxLines: 1,
++                  overflow: TextOverflow.ellipsis,
++                  style: TextStyle(
++                    color: _ink,
+                     fontSize: 15,
+-                    fontWeight: FontWeight.w800, // Lebih tebal (Black weight)
+-                    color: Color(0xFFF4593B), // Dark black
++                    fontWeight: FontWeight.w900,
++                    letterSpacing: -0.1,
+                   ),
+-                  overflow: TextOverflow.ellipsis,
+                 ),
+-              ],
++              ),
++              const SizedBox(width: 10),
++              _buildBadgeDate(dateLabel),
++            ],
++          ),
++          const SizedBox(height: 14),
++          GridView.builder(
++            itemCount: items.length,
++            shrinkWrap: true,
++            physics: const NeverScrollableScrollPhysics(),
++            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
++              crossAxisCount: 2,
++              crossAxisSpacing: 10,
++              mainAxisSpacing: 10,
++              childAspectRatio: 1.58,
+             ),
++            itemBuilder: (context, index) => _MetricCard(data: items[index]),
+           ),
++          // _buildInfoFooter(),
+         ],
+       ),
+     );
+@@ -189,24 +120,29 @@ class SummaryGridSection extends StatelessWidget {
+ 
+   Widget _buildBadgeDate(String label) {
+     return Container(
+-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
++      constraints: const BoxConstraints(maxWidth: 142),
++      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+       decoration: BoxDecoration(
+-        color: const Color(0xFFF2994A), // Orange solid
+-        borderRadius: BorderRadius.circular(20),
++        gradient: const LinearGradient(
++          colors: [Color(0xFFFFA142), Color(0xFFF47D36)],
++        ),
++        borderRadius: BorderRadius.circular(999),
+         boxShadow: [
+           BoxShadow(
+-            color: Colors.black.withOpacity(0.1),
+-            blurRadius: 4,
+-            offset: const Offset(0, 2),
++            color: const Color(0xFFF47D36).withOpacity(0.22),
++            blurRadius: 12,
++            offset: const Offset(0, 6),
+           ),
+         ],
+       ),
+       child: Text(
+         label,
++        maxLines: 1,
++        overflow: TextOverflow.ellipsis,
+         style: const TextStyle(
+           color: Colors.white,
+-          fontSize: 10,
+-          fontWeight: FontWeight.bold,
++          fontSize: 9.5,
++          fontWeight: FontWeight.w800,
+         ),
+       ),
+     );
+@@ -214,25 +150,25 @@ class SummaryGridSection extends StatelessWidget {
+ 
+   Widget _buildInfoFooter() {
+     return Container(
+-      padding: const EdgeInsets.all(12),
++      padding: const EdgeInsets.symmetric(horizontal: 12, vertical:11),
+       decoration: BoxDecoration(
+-        color: const Color(0xFFDFFFE4), // Hijau sangat muda
+-        borderRadius: BorderRadius.circular(12),
+-        border: Border.all(color: const Color(0xFF219653).withOpacity(0.1)),
++        color: const Color(0xFFDDFBE7),
++        borderRadius: BorderRadius.circular(14),
++        border: Border.all(color: const Color(0xFF16A34A).withOpacity(0.14)),
+       ),
+       child: const Row(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          Icon(Icons.info_outline, size: 16, color: Color(0xFF219653)),
++          Icon(Icons.info_outline_rounded, size: 15, color: Color(0xFF16A34A)),
+           SizedBox(width: 8),
+           Expanded(
+             child: Text(
+               "Laporan harian direset setiap hari. Data berikut mencerminkan aktivitas bisnis Anda hari ini saja.",
+               style: TextStyle(
+                 fontSize: 9.5,
+-                color: Color(0xFF219653),
+-                height: 1.4,
+-                fontWeight: FontWeight.w500,
++                color: Color(0xFF149145),
++                height: 1.35,
++                fontWeight: FontWeight.w600,
+               ),
+             ),
+           ),
+@@ -241,3 +177,129 @@ class SummaryGridSection extends StatelessWidget {
+     );
+   }
+ }
++
++class _MetricCard extends StatelessWidget {
++  final _MetricData data;
++
++  const _MetricCard({required this.data});
++
++  @override
++  Widget build(BuildContext context) {
++    final isPositive = data.trend >= 0;
++    final trendColor = isPositive ? const Color(0xFF16A34A) : SummaryGridSection._primary;
++    final trendText = data.trend == 0
++        ? '0.0%'
++        : '${data.trend > 0 ? '+' : ''}${data.trend.toStringAsFixed(1)}%';
++
++    return Container(
++      padding: const EdgeInsets.all(11),
++      decoration: BoxDecoration(
++        color: Colors.white,
++        borderRadius: BorderRadius.circular(18),
++        border: Border.all(color: Colors.white),
++        boxShadow: [
++          BoxShadow(
++            color: const Color(0xFF44231E).withOpacity(0.04),
++            blurRadius: 14,
++            offset: const Offset(0, 8),
++          ),
++        ],
++      ),
++      child: Stack(
++        children: [
++          Positioned(
++            right: -10,
++            bottom: -13,
++            child: Icon(
++              data.icon,
++              size: 52,
++              color: SummaryGridSection._primary.withOpacity(0.055),
++            ),
++          ),
++          Column(
++            crossAxisAlignment: CrossAxisAlignment.start,
++            children: [
++              Row(
++                children: [
++                  Container(
++                    width: 24,
++                    height: 24,
++                    decoration: BoxDecoration(
++                      color: const Color(0xFFFFEFED),
++                      borderRadius: BorderRadius.circular(8),
++                    ),
++                    child: Icon(
++                      data.icon,
++                      size: 13,
++                      color: SummaryGridSection._primary,
++                    ),
++                  ),
++                  const Spacer(),
++                  Container(
++                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
++                    decoration: BoxDecoration(
++                      color: trendColor.withOpacity(0.09),
++                      borderRadius: BorderRadius.circular(999),
++                    ),
++                    child: Text(
++                      trendText,
++                      maxLines: 1,
++                      overflow: TextOverflow.ellipsis,
++                      style: TextStyle(
++                        fontSize: 8,
++                        color: trendColor,
++                        fontWeight: FontWeight.w900,
++                      ),
++                    ),
++                  ),
++                ],
++              ),
++              const SizedBox(height: 8),
++              Text(
++                data.title,
++                maxLines: 1,
++                overflow: TextOverflow.ellipsis,
++                style: const TextStyle(
++                  color: SummaryGridSection._muted,
++                  fontSize: 9,
++                  fontWeight: FontWeight.w900,
++                  letterSpacing: 0.2,
++                ),
++              ),
++              const SizedBox(height: 3),
++              FittedBox(
++                fit: BoxFit.scaleDown,
++                alignment: Alignment.centerLeft,
++                child: Text(
++                  data.value,
++                  maxLines: 1,
++                  style: const TextStyle(
++                    color: SummaryGridSection._primary,
++                    fontSize: 20,
++                    fontWeight: FontWeight.w900,
++                    letterSpacing: -0.35,
++                    height: 1.05,
++                  ),
++                ),
++              ),
++            ],
++          ),
++        ],
++      ),
++    );
++  }
++}
++
++class _MetricData {
++  final String title;
++  final String value;
++  final double trend;
++  final IconData icon;
++
++  const _MetricData({
++    required this.title,
++    required this.value,
++    required this.trend,
++    required this.icon,
++  });
++}
+diff --git a/lib/screens/ringkasan/summary_detail_screen.dart b/lib/screens/ringkasan/summary_detail_screen.dart
+index ac56108..88e1763 100644
+--- a/lib/screens/ringkasan/summary_detail_screen.dart
++++ b/lib/screens/ringkasan/summary_detail_screen.dart
+@@ -290,7 +290,7 @@ class _SummaryDetailScreenState extends State<SummaryDetailScreen> {
+     return Scaffold(
+       appBar: AppBar(
+         title: Text(
+-          widget.category == "Hari ini" ? "Transaksi Hari ini" : widget.category,
++          widget.category,
+           style: const TextStyle(fontWeight: FontWeight.bold),
+         ),
+         leading: IconButton(
+@@ -411,18 +411,18 @@ class _SummaryDetailScreenState extends State<SummaryDetailScreen> {
+         bgColor = Colors.red.shade800;
+         icon = Icons.warning_amber_rounded;
+         break;
+-      case "Siap Diambil":
+-        bgColor = Colors.blue.shade600;
+-        icon = Icons.shopping_basket_rounded;
++      case "Harus Selesai":
++        bgColor = Colors.orange.shade600;
++        icon = Icons.hourglass_empty_rounded;
++        break;
++      case "Baru Masuk":
++        bgColor = Colors.lightBlue.shade600;
++        icon = Icons.local_laundry_service_outlined;
+         break;
+       case "Selesai":
+         bgColor = Colors.green.shade600;
+         icon = Icons.check_circle_outline_rounded;
+         break;
+-      case "Hari ini":
+-        bgColor = Colors.deepOrange.shade800;
+-        icon = Icons.list_alt_rounded;
+-        break;
+       default:
+         bgColor = Colors.deepOrange.shade800;
+         icon = Icons.list_alt_rounded;
+diff --git a/lib/screens/ringkasan/summary_screen.dart b/lib/screens/ringkasan/summary_screen.dart
+index 27d6724..b5fe969 100644
+--- a/lib/screens/ringkasan/summary_screen.dart
++++ b/lib/screens/ringkasan/summary_screen.dart
+@@ -1,4 +1,3 @@
+-import 'dart:math';
+ import 'package:ayocucinew/providers/summary_provider.dart';
+ import 'package:flutter/material.dart';
+ import 'package:provider/provider.dart';
+@@ -20,11 +19,54 @@ class _SummaryScreenState extends State<SummaryScreen> {
+ 
+   @override
+   Widget build(BuildContext context) {
++    const cards = [
++      _SummaryCardData(
++        title: 'Pesanan Terlambat',
++        subtitle: 'Cucian yang sudah lewat tenggat',
++        color: Color(0xFFFF313C),
++        glowColor: Color(0xFFFF7A83),
++        icon: Icons.priority_high_rounded,
++      ),
++      _SummaryCardData(
++        title: 'Harus Selesai',
++        subtitle: 'Cucian yang harus selesai hari ini',
++        color: Color(0xFFFFA12B),
++        glowColor: Color(0xFFFFC25E),
++        icon: Icons.hourglass_empty_rounded,
++      ),
++      _SummaryCardData(
++        title: 'Baru Masuk',
++        subtitle: 'Semua cucian aktif yang masuk hari ini',
++        color: Color(0xFF31B8EF),
++        glowColor: Color(0xFF74D4FF),
++        icon: Icons.local_laundry_service_outlined,
++      ),
++      _SummaryCardData(
++        title: 'Selesai',
++        subtitle: 'Cucian yang selesai hari ini',
++        color: Color(0xFF00C92F),
++        glowColor: Color(0xFF5AF279),
++        icon: Icons.check_rounded,
++      ),
++    ];
++
+     return Scaffold(
++      backgroundColor: const Color(0xFFF6F7F8),
+       appBar: AppBar(
+-        title: const Text(
+-          "Ringkasan Layanan",
+-          style: TextStyle(fontWeight: FontWeight.bold),
++        backgroundColor: Colors.white,
++        elevation: 0,
++        toolbarHeight: 92,
++        centerTitle: true,
++        title: const Padding(
++          padding: EdgeInsets.only(top: 14),
++          child: Text(
++            "Ringkasan Layanan",
++            style: TextStyle(
++              color: Color(0xFF242424),
++              fontSize: 16,
++              fontWeight: FontWeight.w800,
++            ),
++          ),
+         ),
+       ),
+       body: Consumer<SummaryProvider>(
+@@ -36,40 +78,14 @@ class _SummaryScreenState extends State<SummaryScreen> {
+           return RefreshIndicator(
+             onRefresh: () => provider.fetchSummaryData(),
+             child: ListView(
+-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
++              padding: const EdgeInsets.fromLTRB(17, 20, 17, 104),
+               children: [
+-                _buildSummaryCard(
+-                  title: "Pesanan Terlambat",
+-                  subtitle: "Cucian yang sudah lewat tenggat",
+-                  count: provider.counts['Pesanan Terlambat'] ?? 0,
+-                  baseColor: const Color(0xFFD32F2F),
+-                  lightColor: const Color(0xFFFF8A80),
+-                  onTap: () => _navigateToDetail(context, "Pesanan Terlambat"),
+-                ),
+-                _buildSummaryCard(
+-                  title: "Siap Diambil",
+-                  subtitle: "Cucian yang sudah selesai dan siap diambil",
+-                  count: provider.counts['Siap Diambil'] ?? 0,
+-                  baseColor: const Color(0xFF1565C0),
+-                  lightColor: const Color(0xFF80D8FF),
+-                  onTap: () => _navigateToDetail(context, "Siap Diambil"),
+-                ),
+-                _buildSummaryCard(
+-                  title: "Selesai",
+-                  subtitle: "Cucian yang selesai diproses hari ini",
+-                  count: provider.counts['Selesai'] ?? 0,
+-                  baseColor: const Color(0xFF2E7D32),
+-                  lightColor: const Color(0xFF69F0AE),
+-                  onTap: () => _navigateToDetail(context, "Selesai"),
+-                ),
+-                _buildSummaryCard(
+-                  title: "Hari ini",
+-                  subtitle: "Semua cucian aktif yang diproses hari ini",
+-                  count: provider.counts['Hari ini'] ?? 0,
+-                  baseColor: const Color(0xFFBF360C),
+-                  lightColor: const Color(0xFFFFAB91),
+-                  onTap: () => _navigateToDetail(context, "Hari ini"),
+-                ),
++                for (final card in cards)
++                  _buildSummaryCard(
++                    data: card,
++                    count: provider.counts[card.title] ?? 0,
++                    onTap: () => _navigateToDetail(context, card.title),
++                  ),
+                 const SizedBox(height: 10),
+                 _buildInfoNote(),
+               ],
+@@ -90,118 +106,107 @@ class _SummaryScreenState extends State<SummaryScreen> {
+   }
+ 
+   Widget _buildSummaryCard({
+-    required String title,
+-    required String subtitle,
++    required _SummaryCardData data,
+     required int count,
+-    required Color baseColor,
+-    required Color lightColor,
+     required VoidCallback onTap,
+   }) {
++    final countText = count < 10 ? count.toString().padLeft(2, '0') : count.toString();
++
+     return GestureDetector(
+       onTap: onTap,
+       child: Container(
+         margin: const EdgeInsets.only(bottom: 14),
+-        height: 120,
++        height: 123,
+         decoration: BoxDecoration(
+-          borderRadius: BorderRadius.circular(16),
+-          color: baseColor,
+-          boxShadow: [
+-            BoxShadow(
+-              color: baseColor.withOpacity(0.4),
+-              blurRadius: 8,
+-              offset: const Offset(0, 4),
+-            ),
+-          ],
++          borderRadius: BorderRadius.circular(17),
++          color: data.color,
+         ),
+         child: ClipRRect(
+-          borderRadius: BorderRadius.circular(16),
++          borderRadius: BorderRadius.circular(17),
+           child: Stack(
+             children: [
+-              // Arc circles — center just outside right edge
+               Positioned.fill(
+                 child: CustomPaint(
+-                  painter: _ArcPainter(lightColor: lightColor),
++                  painter: _ArcPainter(lightColor: data.glowColor),
+                 ),
+               ),
+ 
+-              // Laundry machine image
+               Positioned(
+-                right: 10,
+-                top: 0,
+-                bottom: 0,
+-                child: Align(
+-                  alignment: Alignment.centerRight,
+-                  child: Image.asset(
+-                    'assets/images/laundry_machine.png',
+-                    height: 95,
+-                    fit: BoxFit.contain,
+-                  ),
++                right: -4,
++                bottom: -18,
++                child: Icon(
++                  data.icon,
++                  size: 124,
++                  color: Colors.white.withOpacity(0.34),
+                 ),
+               ),
+ 
+-              // Count number
+               Positioned(
+-                right: 95,
+-                top: 0,
+-                bottom: 0,
+-                child: Align(
+-                  alignment: Alignment.center,
+-                  child: Text(
+-                    "$count",
+-                    style: const TextStyle(
+-                      color: Colors.white,
+-                      fontSize: 52,
+-                      fontWeight: FontWeight.bold,
+-                      height: 1,
+-                    ),
++                top: 18,
++                right: 14,
++                child: Container(
++                  width: 36,
++                  height: 36,
++                  decoration: BoxDecoration(
++                    shape: BoxShape.circle,
++                    color: Colors.white.withOpacity(0.08),
++                    border: Border.all(color: Colors.white.withOpacity(0.75)),
++                  ),
++                  child: const Icon(
++                    Icons.chevron_right_rounded,
++                    color: Colors.white,
++                    size: 28,
+                   ),
+                 ),
+               ),
+ 
+-              // Left text content
+               Padding(
+-                padding: const EdgeInsets.fromLTRB(18, 18, 175, 14),
++                padding: const EdgeInsets.fromLTRB(17, 17, 82, 15),
+                 child: Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                   children: [
+-                    Column(
+-                      crossAxisAlignment: CrossAxisAlignment.start,
+-                      children: [
+-                        Text(
+-                          title,
+-                          style: const TextStyle(
+-                            color: Colors.white,
+-                            fontSize: 16,
+-                            fontWeight: FontWeight.bold,
+-                          ),
+-                        ),
+-                        const SizedBox(height: 4),
+-                        Text(
+-                          subtitle,
+-                          style: TextStyle(
+-                            color: Colors.white.withOpacity(0.85),
+-                            fontSize: 11,
+-                          ),
+-                        ),
+-                      ],
++                    Text(
++                      data.title,
++                      style: const TextStyle(
++                        color: Colors.white,
++                        fontSize: 17,
++                        fontWeight: FontWeight.w800,
++                        height: 1.1,
++                      ),
+                     ),
++                    const SizedBox(height: 8),
++                    Text(
++                      data.subtitle,
++                      style: TextStyle(
++                        color: Colors.white.withOpacity(0.95),
++                        fontSize: 8,
++                        fontWeight: FontWeight.w500,
++                      ),
++                    ),
++                    const Spacer(),
+                     Row(
+                       mainAxisSize: MainAxisSize.min,
+                       children: [
+                         Text(
+-                          "Lihat Lebih Detail",
+-                          style: TextStyle(
+-                            color: Colors.white.withOpacity(0.9),
+-                            fontSize: 11,
+-                            fontWeight: FontWeight.w500,
++                          countText,
++                          style: const TextStyle(
++                            color: Colors.white,
++                            fontSize: 30,
++                            fontWeight: FontWeight.w900,
++                            height: 1,
+                           ),
+                         ),
+-                        const SizedBox(width: 2),
+-                        Icon(
+-                          Icons.chevron_right,
+-                          color: Colors.white.withOpacity(0.9),
+-                          size: 14,
++                        const SizedBox(width: 11),
++                        const Padding(
++                          padding: EdgeInsets.only(top: 7),
++                          child: Text(
++                            "Pesanan",
++                            style: TextStyle(
++                              color: Colors.white,
++                              fontSize: 12,
++                              fontWeight: FontWeight.w800,
++                            ),
++                          ),
+                         ),
+                       ],
+                     ),
+@@ -239,6 +244,22 @@ class _SummaryScreenState extends State<SummaryScreen> {
+   }
+ }
+ 
++class _SummaryCardData {
++  final String title;
++  final String subtitle;
++  final Color color;
++  final Color glowColor;
++  final IconData icon;
++
++  const _SummaryCardData({
++    required this.title,
++    required this.subtitle,
++    required this.color,
++    required this.glowColor,
++    required this.icon,
++  });
++}
++
+ /// Two concentric filled circles centered just outside the right edge,
+ /// vertically centered. The ClipRRect on the card clips them so only
+ /// the arc portion inside the card is visible — matching the reference UI.
+@@ -269,4 +290,4 @@ class _ArcPainter extends CustomPainter {
+   @override
+   bool shouldRepaint(_ArcPainter oldDelegate) =>
+       oldDelegate.lightColor != lightColor;
+-}
+\ No newline at end of file
++}
+diff --git a/lib/screens/status/detail/detail_orderan_sereen.dart b/lib/screens/status/detail/detail_orderan_sereen.dart
+index 9f998e1..b0807bf 100644
+--- a/lib/screens/status/detail/detail_orderan_sereen.dart
++++ b/lib/screens/status/detail/detail_orderan_sereen.dart
+@@ -13,6 +13,7 @@ import 'package:ayocucinew/screens/status/detail/widgets/history_pesanan_widget.
+ import 'package:ayocucinew/screens/status/detail/widgets/item_cuci_widget.dart';
+ import 'package:ayocucinew/screens/status/detail/widgets/metode_pembayaran_widget.dart';
+ import 'package:ayocucinew/screens/status/detail/widgets/rincian_order_widget.dart';
++import 'package:ayocucinew/screens/status/detail/widgets/section_card_widget.dart';
+ import 'package:ayocucinew/screens/status/detail/widgets/status_pembayaran_widget.dart';
+ import 'package:ayocucinew/screens/status/detail/widgets/status_stepper_widget.dart';
+ import 'package:ayocucinew/shared/widgets/custom_toast.dart';
+@@ -42,10 +43,13 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+     if (!mounted) return;
+ 
+     final notaProvider = context.read<NotaSettingsProvider>();
+-    if (notaProvider.notaSettings == null) await notaProvider.fetchNotaSettings();
++    if (notaProvider.notaSettings == null)
++      await notaProvider.fetchNotaSettings();
+     if (!mounted) return;
+ 
+-    context.read<TransactionProvider>().fetchTransactionById(widget.transactionId);
++    context.read<TransactionProvider>().fetchTransactionById(
++      widget.transactionId,
++    );
+   }
+ 
+   @override
+@@ -54,7 +58,8 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+       builder: (context, provider, _) {
+         final trx = provider.currentDetail;
+ 
+-        if (provider.isLoading || (trx == null && provider.errorMessage == null)) {
++        if (provider.isLoading ||
++            (trx == null && provider.errorMessage == null)) {
+           return _buildSkeletonDetail();
+         }
+ 
+@@ -72,11 +77,18 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+               child: Column(
+                 mainAxisAlignment: MainAxisAlignment.center,
+                 children: [
+-                  Icon(Icons.receipt_long_outlined, size: 64, color: Colors.grey.shade300),
++                  Icon(
++                    Icons.receipt_long_outlined,
++                    size: 64,
++                    color: Colors.grey.shade300,
++                  ),
+                   const SizedBox(height: 16),
+                   Text(
+                     provider.errorMessage ?? 'Pesanan tidak ditemukan',
+-                    style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w600),
++                    style: TextStyle(
++                      color: Colors.grey.shade600,
++                      fontWeight: FontWeight.w600,
++                    ),
+                   ),
+                 ],
+               ),
+@@ -100,19 +112,21 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+     final belumLunas = trx.paymentStatus != 'Lunas' && !isBatal;
+ 
+     return ListView(
+-      padding: const EdgeInsets.only(bottom: 24),
++      padding: const EdgeInsets.only(top: 12, bottom: 24),
+       children: [
++        StatusStepperWidget(
++          currentStatus: trx.orderStatus,
++          onLanjutkan: () => _onLanjutkan(provider, trx),
++        ),
+         const SizedBox(height: 12),
+-        StatusStepperWidget(currentStatus: trx.orderStatus, onLanjutkan: () => _onLanjutkan(provider, trx)),
+-        const SizedBox(height: 10),
+         if (trx.items.isNotEmpty) _DetailLayananCard(trx: trx),
+-        const SizedBox(height: 10),
++        // const SizedBox(height: 12),
+         const ItemCuciWidget(),
+-        const SizedBox(height: 10),
++        const SizedBox(height: 12),
+         const RincianOrderWidget(),
+-        const SizedBox(height: 10),
++        const SizedBox(height: 12),
+         const StatusPembayaranWidget(),
+-        const SizedBox(height: 10),
++        const SizedBox(height: 12),
+         const MetodePembayaranWidget(),
+         const SizedBox(height: 12),
+         if (belumLunas) _BayarButton(onBayar: () => _onBayar(provider, trx)),
+@@ -127,7 +141,10 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+   }
+ 
+   Widget _buildBottomNav(TransactionModel trx) {
+-    return DetailBottomNavWidget(orderStatus: trx.orderStatus, onEdit: () => _onEdit(trx));
++    return DetailBottomNavWidget(
++      orderStatus: trx.orderStatus,
++      onEdit: () => _onEdit(trx),
++    );
+   }
+ 
+   // ─── Actions ────────────────────────────────────────────────────────────────
+@@ -145,39 +162,49 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+     provider.setNotes(trx.notes);
+ 
+     // 4. Navigasi ke OrderScreen dengan mode Edit
+-    Navigator.push(context, MaterialPageRoute(builder: (_) => OrderScreen(editTransactionId: trx.id.toString())));
++    Navigator.push(
++      context,
++      MaterialPageRoute(
++        builder: (_) => OrderScreen(editTransactionId: trx.id.toString()),
++      ),
++    );
+   }
+ 
+   void _onBayar(TransactionProvider provider, TransactionModel trx) {
+     provider.setPendingOrderFromDetail(trx);
+-    Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentPage()));
++    Navigator.push(
++      context,
++      MaterialPageRoute(builder: (_) => const PaymentPage()),
++    );
+   }
+ 
+-  Future<void> _onLanjutkan(TransactionProvider provider, TransactionModel trx) async {
++  Future<void> _onLanjutkan(
++    TransactionProvider provider,
++    TransactionModel trx,
++  ) async {
+     final nextStatus = _getNextStatus(trx.orderStatus);
+-    debugPrint('🔵 _onLanjutkan dipanggil, currentStatus: ${trx.orderStatus}, nextStatus: $nextStatus');
+-
+-    if (nextStatus == null) {
+-      debugPrint('🔴 nextStatus null, return');
+-      return;
+-    }
++    if (nextStatus == null) return;
+ 
+     if (nextStatus == 'Selesai' && trx.paymentStatus != 'Lunas') {
+-      debugPrint('🔴 Belum lunas, return');
+       CustomToast.show(
+         context,
+-        message: 'Selesaikan pembayaran terlebih dahulu sebelum mengubah status ke Selesai.',
++        message:
++            'Selesaikan pembayaran terlebih dahulu sebelum mengubah status ke Selesai.',
+         isError: true,
+       );
+       return;
+     }
+ 
+-    debugPrint('🟢 Memanggil updateTransactionStatus: ${trx.id} -> $nextStatus');
+-    final result = await provider.updateTransactionStatus(trx.id.toString(), nextStatus);
+-    debugPrint('🟢 Result: $result');
+-
++    final result = await provider.updateTransactionStatus(
++      trx.id.toString(),
++      nextStatus,
++    );
+     if (!mounted) return;
+-    CustomToast.show(context, message: result['message'] ?? '', isError: result['success'] != true);
++    CustomToast.show(
++      context,
++      message: result['message'] ?? '',
++      isError: result['success'] != true,
++    );
+   }
+ 
+   // ─── Dialogs ────────────────────────────────────────────────────────────────
+@@ -200,7 +227,10 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+           decoration: InputDecoration(
+             hintText: 'Tulis alasan membatalkan pesanan',
+             hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
++            contentPadding: const EdgeInsets.symmetric(
++              horizontal: 14,
++              vertical: 12,
++            ),
+             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+           ),
+           maxLines: 2,
+@@ -210,17 +240,29 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+           Row(
+             children: [
+               Expanded(
+-                child: OutlinedButton(onPressed: () => Navigator.pop(context), child: const Text('TUTUP')),
++                child: OutlinedButton(
++                  onPressed: () => Navigator.pop(context),
++                  child: const Text('TUTUP'),
++                ),
+               ),
+               const SizedBox(width: 12),
+               Expanded(
+                 child: ElevatedButton(
+                   onPressed: () {
+                     Navigator.pop(context);
+-                    _konfirmasiBatal(provider, trx, alasan: alasanController.text.trim());
++                    _konfirmasiBatal(
++                      provider,
++                      trx,
++                      alasan: alasanController.text.trim(),
++                    );
+                   },
+-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+-                  child: const Text('YA', style: TextStyle(color: Colors.white)),
++                  style: ElevatedButton.styleFrom(
++                    backgroundColor: AppColors.primary,
++                  ),
++                  child: const Text(
++                    'YA',
++                    style: TextStyle(color: Colors.white),
++                  ),
+                 ),
+               ),
+             ],
+@@ -230,10 +272,22 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+     );
+   }
+ 
+-  Future<void> _konfirmasiBatal(TransactionProvider provider, TransactionModel trx, {String alasan = ''}) async {
+-    final result = await provider.updateTransactionStatus(trx.id.toString(), 'Batal', alasan: alasan);
++  Future<void> _konfirmasiBatal(
++    TransactionProvider provider,
++    TransactionModel trx, {
++    String alasan = '',
++  }) async {
++    final result = await provider.updateTransactionStatus(
++      trx.id.toString(),
++      'Batal',
++      alasan: alasan,
++    );
+     if (!mounted) return;
+-    CustomToast.show(context, message: result['message'] ?? '', isError: result['success'] != true);
++    CustomToast.show(
++      context,
++      message: result['message'] ?? '',
++      isError: result['success'] != true,
++    );
+   }
+ 
+   String? _getNextStatus(String current) {
+@@ -248,7 +302,11 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+   Widget _buildSkeletonDetail() {
+     return Scaffold(
+       backgroundColor: const Color(0xFFF8F9FA),
+-      appBar: AppBar(backgroundColor: Colors.white, elevation: 0, toolbarHeight: 80),
++      appBar: AppBar(
++        backgroundColor: Colors.white,
++        elevation: 0,
++        toolbarHeight: 80,
++      ),
+       body: Shimmer.fromColors(
+         baseColor: Colors.grey.shade300,
+         highlightColor: Colors.grey.shade100,
+@@ -257,7 +315,10 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+           children: [
+             Container(
+               height: 100,
+-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: Colors.white),
++              decoration: BoxDecoration(
++                borderRadius: BorderRadius.circular(16),
++                color: Colors.white,
++              ),
+             ),
+             const SizedBox(height: 16),
+             ...List.generate(
+@@ -266,7 +327,10 @@ class _DetailPesananScreenState extends State<DetailPesananScreen> {
+                 padding: const EdgeInsets.only(bottom: 12),
+                 child: Container(
+                   height: 80,
+-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: Colors.white),
++                  decoration: BoxDecoration(
++                    borderRadius: BorderRadius.circular(12),
++                    color: Colors.white,
++                  ),
+                 ),
+               ),
+             ),
+@@ -306,10 +370,19 @@ class _DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
+                   children: [
+                     Text(
+                       'No Invoice : ${trx.invoiceNumber ?? trx.id ?? '-'}',
+-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
++                      style: const TextStyle(
++                        fontSize: 13,
++                        fontWeight: FontWeight.w700,
++                      ),
+                     ),
+                     const SizedBox(height: 2),
+-                    Text(trx.customer?.displayName ?? '-', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
++                    Text(
++                      trx.customer?.displayName ?? '-',
++                      style: TextStyle(
++                        fontSize: 11,
++                        color: Colors.grey.shade600,
++                      ),
++                    ),
+                   ],
+                 ),
+               ),
+@@ -340,22 +413,30 @@ class _BackButton extends StatelessWidget {
+   }
+ }
+ 
+-class _DetailLayananCard extends StatelessWidget {
++class _DetailLayananCard extends StatefulWidget {
+   final TransactionModel trx;
+   const _DetailLayananCard({required this.trx});
+ 
++  @override
++  State<_DetailLayananCard> createState() => _DetailLayananCardState();
++}
++
++class _DetailLayananCardState extends State<_DetailLayananCard> {
++  bool _expanded = true;
++
+   @override
+   Widget build(BuildContext context) {
+-    return Container(
+-      margin: const EdgeInsets.symmetric(horizontal: 16),
+-      decoration: BoxDecoration(
+-        color: Colors.white,
+-        borderRadius: BorderRadius.circular(12),
+-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6)],
+-      ),
+-      child: ExpansionTile(
+-        title: const Text('Detail Layanan', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+-        children: trx.items.map((item) => DetailLayananTile(item: item)).toList(),
++    return SectionCardWidget(
++      title: 'Detail Layanan',
++      expanded: _expanded,
++      onToggle: () => setState(() => _expanded = !_expanded),
++      child: Padding(
++        padding: const EdgeInsets.symmetric(vertical: 8),
++        child: Column(
++          children: widget.trx.items
++              .map((item) => DetailLayananTile(item: item))
++              .toList(),
++        ),
+       ),
+     );
+   }
+@@ -374,7 +455,9 @@ class _BayarButton extends StatelessWidget {
+         style: ElevatedButton.styleFrom(
+           backgroundColor: AppColors.primary,
+           minimumSize: const Size(double.infinity, 48),
+-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
++          shape: RoundedRectangleBorder(
++            borderRadius: BorderRadius.circular(12),
++          ),
+         ),
+         child: const Text(
+           'Bayar Sekarang',
+@@ -399,9 +482,14 @@ class _BatalButton extends StatelessWidget {
+           foregroundColor: AppColors.primary,
+           side: const BorderSide(color: AppColors.primary, width: 2),
+           minimumSize: const Size(double.infinity, 48),
+-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
++          shape: RoundedRectangleBorder(
++            borderRadius: BorderRadius.circular(12),
++          ),
++        ),
++        child: const Text(
++          'BATALKAN PESANAN',
++          style: TextStyle(fontWeight: FontWeight.w700),
+         ),
+-        child: const Text('BATALKAN PESANAN', style: TextStyle(fontWeight: FontWeight.w700)),
+       ),
+     );
+   }
+diff --git a/lib/screens/status/detail/widgets/detail_layanan_widget.dart b/lib/screens/status/detail/widgets/detail_layanan_widget.dart
+index 48f0d44..ba169c5 100644
+--- a/lib/screens/status/detail/widgets/detail_layanan_widget.dart
++++ b/lib/screens/status/detail/widgets/detail_layanan_widget.dart
+@@ -39,7 +39,7 @@ class DetailLayananTile extends StatelessWidget {
+     }
+ 
+     return Padding(
+-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
++      padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 16),
+       child: Row(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+@@ -65,7 +65,7 @@ class DetailLayananTile extends StatelessWidget {
+                     style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                   ),
+                 ],
+-                const SizedBox(height: 4),
++                const SizedBox(height: 3),
+                 // Baris 3: qty x harga
+                 Text(
+                   '$qty ${item.unit} × $hargaRaw',
+@@ -83,12 +83,14 @@ class DetailLayananTile extends StatelessWidget {
+                 style: const TextStyle(
+                   fontSize: 14,
+                   fontWeight: FontWeight.w700,
+-                  color: Color(0xFF1A1A2E),
++                  color: Color(0xFFFF5F4E), //warna orange
+                 ),
+               ),
+-              const SizedBox(height: 4),
++              const SizedBox(height: 3),
+               Text(
+-                '${item.duration} ${item.durationUnit}',
++                item.duration == null || item.durationUnit == null
++                    ? "-"
++                    : "${item.duration} ${item.durationUnit}",
+                 style: const TextStyle(
+                   fontSize: 12,
+                   fontWeight: FontWeight.w700,
+diff --git a/lib/screens/status/detail/widgets/rincian_order_widget.dart b/lib/screens/status/detail/widgets/rincian_order_widget.dart
+index ba9d7aa..52bf43e 100644
+--- a/lib/screens/status/detail/widgets/rincian_order_widget.dart
++++ b/lib/screens/status/detail/widgets/rincian_order_widget.dart
+@@ -100,6 +100,8 @@ class _RincianOrderWidgetState extends State<RincianOrderWidget> {
+                 label: 'Status',
+                 value: trx.orderStatus,
+                 valueColor: _getStatusColor(trx.orderStatus),
++                icon: Icons.check_rounded,
++                iconColor: const Color(0xFF16A34A),
+               ),
+ 
+               // ─── Alasan Batal ─────────────────────────────────────────
+@@ -142,8 +144,17 @@ class _DetailRow extends StatelessWidget {
+   final String label;
+   final String value;
+   final Color? valueColor;
++  final IconData? icon;
++  final Color? iconColor;
+ 
+-  const _DetailRow({required this.imagePath, required this.label, required this.value, this.valueColor});
++  const _DetailRow({
++    required this.imagePath,
++    required this.label,
++    required this.value,
++    this.valueColor,
++    this.icon,
++    this.iconColor,
++  });
+ 
+   @override
+   Widget build(BuildContext context) {
+@@ -155,28 +166,36 @@ class _DetailRow extends StatelessWidget {
+           SizedBox(
+             width: 40,
+             height: 40,
+-            child: Image(
+-              image: AssetImage(imagePath),
+-              width: 40,
+-              height: 40,
+-              fit: BoxFit.contain,
+-              filterQuality: FilterQuality.high,
+-              isAntiAlias: true,
+-              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+-                if (wasSynchronouslyLoaded || frame != null) {
+-                  return child;
+-                }
+-                return AnimatedOpacity(
+-                  opacity: frame == null ? 0 : 1,
+-                  duration: const Duration(milliseconds: 200),
+-                  curve: Curves.easeIn,
+-                  child: child,
+-                );
+-              },
+-              errorBuilder: (context, error, stackTrace) {
+-                return const Icon(Icons.image_not_supported_outlined, size: 24, color: Colors.grey);
+-              },
+-            ),
++            child: icon != null
++                ? Container(
++                    decoration: BoxDecoration(
++                      shape: BoxShape.circle,
++                      border: Border.all(color: AppColors.border),
++                    ),
++                    child: Icon(icon, size: 22, color: iconColor ?? AppColors.primary),
++                  )
++                : Image(
++                    image: AssetImage(imagePath),
++                    width: 40,
++                    height: 40,
++                    fit: BoxFit.contain,
++                    filterQuality: FilterQuality.high,
++                    isAntiAlias: true,
++                    frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
++                      if (wasSynchronouslyLoaded || frame != null) {
++                        return child;
++                      }
++                      return AnimatedOpacity(
++                        opacity: frame == null ? 0 : 1,
++                        duration: const Duration(milliseconds: 200),
++                        curve: Curves.easeIn,
++                        child: child,
++                      );
++                    },
++                    errorBuilder: (context, error, stackTrace) {
++                      return const Icon(Icons.image_not_supported_outlined, size: 24, color: Colors.grey);
++                    },
++                  ),
+           ),
+           const SizedBox(width: 12),
+           Expanded(
+@@ -199,4 +218,4 @@ class _DetailRow extends StatelessWidget {
+       ),
+     );
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/lib/screens/status/detail/widgets/section_card_widget.dart b/lib/screens/status/detail/widgets/section_card_widget.dart
+index ba5437f..15092a8 100644
+--- a/lib/screens/status/detail/widgets/section_card_widget.dart
++++ b/lib/screens/status/detail/widgets/section_card_widget.dart
+@@ -22,6 +22,7 @@ class SectionCardWidget extends StatelessWidget {
+       decoration: BoxDecoration(
+         color: Colors.white,
+         borderRadius: BorderRadius.circular(16),
++        border: Border.all(color: AppColors.border),
+       ),
+       child: Column(
+         children: [
+@@ -29,7 +30,7 @@ class SectionCardWidget extends StatelessWidget {
+             onTap: onToggle,
+             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+             child: Padding(
+-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
++              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+               child: Row(
+                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                 children: [
+@@ -37,7 +38,7 @@ class SectionCardWidget extends StatelessWidget {
+                     title,
+                     style: const TextStyle(
+                       fontSize: 13,
+-                      fontWeight: FontWeight.w700,
++                      fontWeight: FontWeight.w800,
+                     ),
+                   ),
+                   AnimatedRotation(
+@@ -60,4 +61,4 @@ class SectionCardWidget extends StatelessWidget {
+       ),
+     );
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/pubspec.yaml b/pubspec.yaml
+index f7eed1d..5ef2f2b 100644
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -72,6 +72,7 @@ flutter:
+     - assets/icons/
+     - assets/icons/pengeluaran/
+     - assets/icons/setting_screen/
++    - assets/icons/notification/
+     - assets/bank/
+     - assets/E-Wallet/
+    

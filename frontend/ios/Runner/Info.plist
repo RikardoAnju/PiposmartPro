@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+    <key>CFBundleDisplayName</key>
+    <string>Ayo Cuci</string>
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CFBundleName</key>
+    <string>Ayo Cuci</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string>$(FLUTTER_BUILD_NAME)</string>
+    <key>CFBundleSignature</key>
+    <string>????</string>
+    
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLName</key>
+            <string>GoogleSignIn</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.92161657227-2ftj1g1qb8pup5bt7o31its8g50qvfh0</string>
+            </array>
+        </dict>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLName</key>
+            <string>id.ayocuci.app</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>ayocuci</string>
+            </array>
+        </dict>
+    </array>
+
+    <key>CFBundleVersion</key>
+    <string>$(FLUTTER_BUILD_NUMBER)</string>
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>whatsapp</string>
+        <string>whatsapp-business</string>
+    </array>
+    <key>NSContactsUsageDescription</key>
+    <string>AyoCuci mengakses kontak agar Anda bisa memilih kontak untuk didaftarkan sebagai pelanggan. Hanya kontak yang Anda pilih (nama dan nomor telepon) yang akan diunggah ke server AyoCuci dan disimpan sebagai data pelanggan laundry Anda.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>AyoCuci memerlukan akses kamera untuk scan QR struk dan mengambil foto saat upload gambar.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>AyoCuci menggunakan lokasi untuk menentukan titik outlet dan memvalidasi absensi karyawan.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>AyoCuci memerlukan akses galeri untuk memilih logo nota dan gambar lain yang ingin diunggah.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>AyoCuci memerlukan akses foto untuk menyimpan atau memproses gambar yang dipilih pengguna.</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>AyoCuci memerlukan akses Bluetooth untuk mencari dan menghubungkan printer thermal yang kompatibel.</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>AyoCuci memerlukan akses Bluetooth untuk mencetak nota ke printer thermal yang kompatibel.</string>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+    </array>
+    
+    <key>UIApplicationSceneManifest</key>
+    <dict>
+        <key>UIApplicationSupportsMultipleScenes</key>
+        <false/>
+        <key>UISceneConfigurations</key>
+        <dict>
+            <key>UIWindowSceneSessionRoleApplication</key>
+            <array>
+                <dict>
+                    <key>UISceneClassName</key>
+                    <string>UIWindowScene</string>
+                    <key>UISceneConfigurationName</key>
+                    <string>flutter</string>
+                    <key>UISceneDelegateClassName</key>
+                    <string>FlutterSceneDelegate</string>
+                    <key>UISceneStoryboardFile</key>
+                    <string>Main</string>
+                </dict>
+            </array>
+        </dict>
+    </dict>
+    
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+    <key>UIMainStoryboardFile</key>
+    <string>Main</string>
+    
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+</dict>
+</plist>

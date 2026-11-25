@@ -1,0 +1,416 @@
+diff --git a/android/app/src/main/res/drawable-v21/launch_background.xml b/android/app/src/main/res/drawable-v21/launch_background.xml
+index f74085f..879e791 100644
+--- a/android/app/src/main/res/drawable-v21/launch_background.xml
++++ b/android/app/src/main/res/drawable-v21/launch_background.xml
+@@ -1,12 +1,9 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<!-- Modify this file to customize your launch splash screen -->
+ <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+-    <item android:drawable="?android:colorBackground" />
+-
+-    <!-- You can insert your own image assets here -->
+-    <!-- <item>
++    <item android:drawable="@color/splash_background" />
++    <item>
+         <bitmap
+             android:gravity="center"
+-            android:src="@mipmap/launch_image" />
+-    </item> -->
++            android:src="@drawable/splash_logo" />
++    </item>
+ </layer-list>
+diff --git a/android/app/src/main/res/drawable/launch_background.xml b/android/app/src/main/res/drawable/launch_background.xml
+index 304732f..879e791 100644
+--- a/android/app/src/main/res/drawable/launch_background.xml
++++ b/android/app/src/main/res/drawable/launch_background.xml
+@@ -1,12 +1,9 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<!-- Modify this file to customize your launch splash screen -->
+ <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+-    <item android:drawable="@android:color/white" />
+-
+-    <!-- You can insert your own image assets here -->
+-    <!-- <item>
++    <item android:drawable="@color/splash_background" />
++    <item>
+         <bitmap
+             android:gravity="center"
+-            android:src="@mipmap/launch_image" />
+-    </item> -->
++            android:src="@drawable/splash_logo" />
++    </item>
+ </layer-list>
+diff --git a/android/app/src/main/res/values/colors.xml b/android/app/src/main/res/values/colors.xml
+index 54e4710..df84e6c 100644
+--- a/android/app/src/main/res/values/colors.xml
++++ b/android/app/src/main/res/values/colors.xml
+@@ -2,4 +2,5 @@
+ <resources>
+     <color name="ic_launcher_background">#ffffff</color>
+     <color name="notification_color">#FF4500</color>
+-</resources>
+\ No newline at end of file
++    <color name="splash_background">#FF5F4E</color>
++</resources>
+diff --git a/ios/Podfile.lock b/ios/Podfile.lock
+index c3cfbbb..2154c8a 100644
+--- a/ios/Podfile.lock
++++ b/ios/Podfile.lock
+@@ -91,6 +91,8 @@ PODS:
+     - Flutter
+   - flutter_local_notifications (0.0.1):
+     - Flutter
++  - flutter_native_splash (2.4.3):
++    - Flutter
+   - flutter_secure_storage_darwin (10.0.0):
+     - Flutter
+     - FlutterMacOS
+@@ -180,6 +182,7 @@ DEPENDENCIES:
+   - flutter_blue_plus_darwin (from `.symlinks/plugins/flutter_blue_plus_darwin/darwin`)
+   - flutter_contacts (from `.symlinks/plugins/flutter_contacts/ios`)
+   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
++  - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
+   - flutter_secure_storage_darwin (from `.symlinks/plugins/flutter_secure_storage_darwin/darwin`)
+   - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/darwin`)
+   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+@@ -234,6 +237,8 @@ EXTERNAL SOURCES:
+     :path: ".symlinks/plugins/flutter_contacts/ios"
+   flutter_local_notifications:
+     :path: ".symlinks/plugins/flutter_local_notifications/ios"
++  flutter_native_splash:
++    :path: ".symlinks/plugins/flutter_native_splash/ios"
+   flutter_secure_storage_darwin:
+     :path: ".symlinks/plugins/flutter_secure_storage_darwin/darwin"
+   google_sign_in_ios:
+@@ -274,6 +279,7 @@ SPEC CHECKSUMS:
+   flutter_blue_plus_darwin: 20a08bfeaa0f7804d524858d3d8744bcc1b6dbc3
+   flutter_contacts: 2ec1d6b62ca2869c3bbb3871bd74d4e3ef157135
+   flutter_local_notifications: 643a3eda1ce1c0599413ca31672536d423dee214
++  flutter_native_splash: c32d145d68aeda5502d5f543ee38c192065986cf
+   flutter_secure_storage_darwin: acdb3f316ed05a3e68f856e0353b133eec373a23
+   google_sign_in_ios: b48bb9af78576358a168361173155596c845f0b9
+   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
+diff --git a/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png b/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png
+index 9da19ea..1f6251b 100644
+Binary files a/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png and b/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png differ
+diff --git a/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png b/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png
+index 9da19ea..1f6251b 100644
+Binary files a/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png and b/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png differ
+diff --git a/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png b/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png
+index 9da19ea..1f6251b 100644
+Binary files a/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png and b/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png differ
+diff --git a/ios/Runner/Base.lproj/LaunchScreen.storyboard b/ios/Runner/Base.lproj/LaunchScreen.storyboard
+index f2e259c..73bc94d 100644
+--- a/ios/Runner/Base.lproj/LaunchScreen.storyboard
++++ b/ios/Runner/Base.lproj/LaunchScreen.storyboard
+@@ -19,7 +19,7 @@
+                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
+                             </imageView>
+                         </subviews>
+-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
++                        <color key="backgroundColor" red="1" green="0.3725490196" blue="0.3058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                         <constraints>
+                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="1a2-6s-vTC"/>
+                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="4X2-HB-R7a"/>
+diff --git a/lib/app_router.dart b/lib/app_router.dart
+index 9bbf3d6..667fd7a 100644
+--- a/lib/app_router.dart
++++ b/lib/app_router.dart
+@@ -6,7 +6,6 @@
+ import 'package:flutter/material.dart';
+ import 'package:ayocucinew/screens/auth/login_screen.dart';
+ import 'package:ayocucinew/screens/auth/register_master_screen.dart';
+-import 'package:ayocucinew/screens/auth/splash_screen.dart';
+ import 'package:ayocucinew/screens/auth/forgot_password_screen.dart';
+ import 'package:ayocucinew/screens/home/home_screen.dart';
+ import 'package:ayocucinew/screens/home/notification_screen.dart';
+@@ -33,7 +32,6 @@ import 'package:ayocucinew/screens/report/laporan%20transakasi/ringkasan_transak
+ 
+ class AppRouter {
+   static Map<String, WidgetBuilder> get routes => {
+-    '/': (context) => const SplashScreen(),
+     '/login': (context) => const LoginScreen(),
+     '/register': (context) => const RegisterMasterScreen(),
+     '/forgot-password': (context) => const ForgotPasswordScreen(),
+diff --git a/lib/main.dart b/lib/main.dart
+index 603888b..e2f9e4b 100644
+--- a/lib/main.dart
++++ b/lib/main.dart
+@@ -7,10 +7,14 @@ import 'package:firebase_core/firebase_core.dart';
+ 
+ import 'firebase_options.dart';
+ import 'package:ayocucinew/core/service/fcm_service.dart';
++import 'package:ayocucinew/providers/app_provider.dart';
+ import 'package:ayocucinew/providers/auth_provider.dart';
+ import 'package:ayocucinew/app_providers.dart';
+ import 'package:ayocucinew/app_router.dart';
+ import 'package:ayocucinew/app_links_handler.dart';
++import 'package:ayocucinew/screens/auth/login_screen.dart';
++import 'package:ayocucinew/screens/home/home_screen.dart';
++import 'package:provider/provider.dart';
+ 
+ void main() async {
+   WidgetsFlutterBinding.ensureInitialized();
+@@ -75,9 +79,57 @@ class _MyAppState extends State<MyApp> {
+         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFFF5F4E)),
+         useMaterial3: true,
+       ),
+-      initialRoute: '/',
+       routes: AppRouter.routes,
+       onGenerateRoute: AppRouter.onGenerateRoute,
++      home: const _StartupGate(),
+     );
+   }
+ }
++
++class _StartupGate extends StatefulWidget {
++  const _StartupGate();
++
++  @override
++  State<_StartupGate> createState() => _StartupGateState();
++}
++
++class _StartupGateState extends State<_StartupGate> {
++  bool _checked = false;
++  bool _isLoggedIn = false;
++
++  @override
++  void initState() {
++    super.initState();
++    _bootstrap();
++  }
++
++  Future<void> _bootstrap() async {
++    final authProv = context.read<AuthProvider>();
++    final appProv = context.read<AppProvider>();
++
++    appProv.setContext(context);
++
++    final isLoggedIn = await authProv.tryAutoLogin();
++    if (isLoggedIn) {
++      await appProv.fetchAppData(force: true);
++    }
++
++    if (!mounted) return;
++    setState(() {
++      _isLoggedIn = isLoggedIn;
++      _checked = true;
++    });
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    if (!_checked) {
++      return const Scaffold(
++        backgroundColor: Colors.white,
++        body: Center(child: CircularProgressIndicator()),
++      );
++    }
++
++    return _isLoggedIn ? const HomeScreen() : const LoginScreen();
++  }
++}
+diff --git a/lib/screens/auth/splash_screen.dart b/lib/screens/auth/splash_screen.dart
+deleted file mode 100644
+index 88ba536..0000000
+--- a/lib/screens/auth/splash_screen.dart
++++ /dev/null
+@@ -1,90 +0,0 @@
+-// lib/screens/auth/splash_screen.dart
+-
+-import 'package:ayocucinew/providers/app_provider.dart';
+-import 'package:ayocucinew/providers/auth_provider.dart';
+-import 'package:flutter/material.dart';
+-import 'package:flutter/services.dart';
+-import 'package:provider/provider.dart';
+-
+-class SplashScreen extends StatefulWidget {
+-  const SplashScreen({super.key});
+-
+-  @override
+-  State<SplashScreen> createState() => _SplashScreenState();
+-}
+-
+-class _SplashScreenState extends State<SplashScreen> {
+-  @override
+-  void initState() {
+-    super.initState();
+-    _checkStatus();
+-  }
+-
+-  /// Logika pengecekan status login dan inisialisasi data awal
+-  void _checkStatus() async {
+-    // Memberikan waktu logo tampil sejenak (Branding duration)
+-    await Future.delayed(const Duration(seconds: 2));
+-    if (!mounted) return;
+-
+-    final authProv = context.read<AuthProvider>();
+-    final appProv = context.read<AppProvider>();
+-
+-    // 1. Coba auto-login menggunakan token yang tersimpan di secure storage
+-    final isLoggedIn = await authProv.tryAutoLogin();
+-
+-    if (isLoggedIn) {
+-      debugPrint("🚀 Auto Login Success, fetching initial data...");
+-
+-      // 2. Ambil data Profile & Dashboard Summary secara paralel
+-      // fetchAppData menggunakan Future.wait agar data lengkap sebelum masuk Home
+-      await appProv.fetchAppData(force: true);
+-
+-      // 3. Inisialisasi koneksi WebSocket untuk fitur real-time
+-      // Kita ambil outlet ID dari data yang baru saja di-fetch
+-      final String? outletId = appProv.outlet?.id.toString();
+-      if (outletId != null && outletId.isNotEmpty) {
+-        appProv.initRealtime(outletId);
+-      }
+-
+-      if (!mounted) return;
+-      // Langsung ke Home dengan data yang sudah "panas" (ready)
+-      Navigator.pushReplacementNamed(context, '/home');
+-    } else {
+-      // Jika session habis atau belum login, arahkan ke Login
+-      Navigator.pushReplacementNamed(context, '/login');
+-    }
+-  }
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    // Mengunci status bar agar teks berwarna putih di atas background oranye
+-    return AnnotatedRegion<SystemUiOverlayStyle>(
+-      value: SystemUiOverlayStyle.light,
+-      child: Scaffold(
+-        // Menggunakan warna branding primer AyoCuci
+-        backgroundColor: const Color(0xFFFF4500),
+-        body: Center(
+-          child: Column(
+-            mainAxisAlignment: MainAxisAlignment.center,
+-            children: [
+-              // Hero tag 'app_logo' disinkronkan dengan halaman Login untuk transisi mulus
+-              Hero(
+-                tag: 'app_logo',
+-                child: Image.asset(
+-                  'assets/images/logo.png',
+-                  width: 200,
+-                  // Fallback jika file asset hilang/error
+-                  errorBuilder: (context, error, stackTrace) => const Icon(
+-                    Icons.wash_rounded,
+-                    size: 100,
+-                    color: Colors.white,
+-                  ),
+-                ),
+-              ),
+-            ],
+-          ),
+-        ),
+-      ),
+-    );
+-  }
+-}
+diff --git a/pubspec.lock b/pubspec.lock
+index b500fd9..acd7663 100644
+--- a/pubspec.lock
++++ b/pubspec.lock
+@@ -17,6 +17,14 @@ packages:
+       url: "https://pub.dev"
+     source: hosted
+     version: "6.0.0"
++  ansicolor:
++    dependency: transitive
++    description:
++      name: ansicolor
++      sha256: "50e982d500bc863e1d703448afdbf9e5a72eb48840a4f766fa361ffd6877055f"
++      url: "https://pub.dev"
++    source: hosted
++    version: "2.0.3"
+   app_contact_checker:
+     dependency: "direct main"
+     description:
+@@ -169,6 +177,14 @@ packages:
+       url: "https://pub.dev"
+     source: hosted
+     version: "3.0.7"
++  csslib:
++    dependency: transitive
++    description:
++      name: csslib
++      sha256: "09bad715f418841f976c77db72d5398dc1253c21fb9c0c7f0b0b985860b2d58e"
++      url: "https://pub.dev"
++    source: hosted
++    version: "1.0.2"
+   cupertino_icons:
+     dependency: "direct main"
+     description:
+@@ -459,6 +475,14 @@ packages:
+     description: flutter
+     source: sdk
+     version: "0.0.0"
++  flutter_native_splash:
++    dependency: "direct dev"
++    description:
++      name: flutter_native_splash
++      sha256: "4fb9f4113350d3a80841ce05ebf1976a36de622af7d19aca0ca9a9911c7ff002"
++      url: "https://pub.dev"
++    source: hosted
++    version: "2.4.7"
+   flutter_plugin_android_lifecycle:
+     dependency: transitive
+     description:
+@@ -589,6 +613,14 @@ packages:
+       url: "https://pub.dev"
+     source: hosted
+     version: "2.1.0"
++  html:
++    dependency: transitive
++    description:
++      name: html
++      sha256: "6d1264f2dffa1b1101c25a91dff0dc2daee4c18e87cd8538729773c073dbf602"
++      url: "https://pub.dev"
++    source: hosted
++    version: "0.15.6"
+   http:
+     dependency: "direct main"
+     description:
+@@ -1122,6 +1154,14 @@ packages:
+       url: "https://pub.dev"
+     source: hosted
+     version: "1.4.0"
++  universal_io:
++    dependency: transitive
++    description:
++      name: universal_io
++      sha256: f63cbc48103236abf48e345e07a03ce5757ea86285ed313a6a032596ed9301e2
++      url: "https://pub.dev"
++    source: hosted
++    version: "2.3.1"
+   url_launcher:
+     dependency: "direct main"
+     description:
+diff --git a/pubspec.yaml b/pubspec.yaml
+index 84297b6..20c6383 100644
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -55,6 +55,7 @@ dev_dependencies:
+   flutter_lints: ^6.0.0
+   change_app_package_name: ^1.5.0
+   flutter_launcher_icons: ^0.13.1
++  flutter_native_splash: ^2.4.6
+ 
+ flutter_launcher_icons:
+   android: "launcher_icon"
+@@ -63,6 +64,16 @@ flutter_launcher_icons:
+   adaptive_icon_background: "#ffffff" 
+   adaptive_icon_foreground: "assets/images/logo_app.png"
+ 
++flutter_native_splash:
++  color: "#FF5F4E"
++  image: assets/images/logo_app.png
++  android: true
++  ios: true
++  web: false
++  android_12:
++    color: "#FF5F4E"
++    image: assets/images/logo_app.png
++
+ flutter:
+   uses-material-design: true
+   assets:

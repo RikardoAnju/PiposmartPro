@@ -1,0 +1,267 @@
+diff --git a/lib/core/utils/app_image_cache.dart b/lib/core/utils/app_image_cache.dart
+index 87a463d..462dde4 100644
+--- a/lib/core/utils/app_image_cache.dart
++++ b/lib/core/utils/app_image_cache.dart
+@@ -93,6 +93,18 @@ class AppImageCache {
+     );
+   }
+ 
++  static Future<void> precacheAuthAssets(BuildContext context) async {
++    await _precacheAssets(context, const [
++      'assets/icons/logo_login_screen.webp',
++      'assets/onboarding/Onboard-1.webp',
++      'assets/onboarding/Onboard-2.webp',
++    ]);
++  }
++
++  static Future<void> precacheHeaderBrandAsset(BuildContext context) async {
++    await _precacheAssets(context, const ['assets/icons/Logo Ayocuci fix parah.webp']);
++  }
++
+   static void _runAfterFirstFrame(VoidCallback callback) {
+     SchedulerBinding.instance.addPostFrameCallback((_) => callback());
+   }
+diff --git a/lib/core/utils/image_picker_helper.dart b/lib/core/utils/image_picker_helper.dart
+index 7ac949e..014f6ef 100644
+--- a/lib/core/utils/image_picker_helper.dart
++++ b/lib/core/utils/image_picker_helper.dart
+@@ -73,7 +73,7 @@ class ImagePickerHelper {
+       }
+ 
+       // Use file_picker instead of image_picker
+-      final result = await FilePicker.platform.pickFiles(
++      final result = await FilePicker.pickFiles(
+         type: FileType.image,
+         allowMultiple: false,
+       );
+@@ -142,7 +142,7 @@ class ImagePickerHelper {
+         debugPrint('Image picker failed, trying alternative: $e');
+ 
+         // Fallback: Use file_picker with camera
+-        final result = await FilePicker.platform.pickFiles(
++        final result = await FilePicker.pickFiles(
+           type: FileType.image,
+           allowMultiple: false,
+         );
+diff --git a/lib/providers/auth_provider.dart b/lib/providers/auth_provider.dart
+index 9c8d208..409eede 100644
+--- a/lib/providers/auth_provider.dart
++++ b/lib/providers/auth_provider.dart
+@@ -780,4 +780,26 @@ class AuthProvider extends ChangeNotifier {
+       notifyListeners();
+     }
+   }
++  Future<Map<String, dynamic>> deleteAccount({
++    required String reason,
++    String? reasonDetail,
++  }) async {
++    _isLoading = true;
++    notifyListeners();
++    try {
++      final response = await ApiClient.delete('/user/delete'); // Or whatever endpoint
++      
++      if (response.statusCode == 200 || response.statusCode == 201) {
++        await logout(); // re-use logout logic
++        return {'success': true, 'message': 'Akun berhasil dihapus'};
++      }
++      return {'success': false, 'message': 'Gagal menghapus akun'};
++    } catch (e) {
++      debugPrint('Error deleting account: $e');
++      return {'success': false, 'message': 'Terjadi kesalahan sistem'};
++    } finally {
++      _isLoading = false;
++      notifyListeners();
++    }
++  }
+ }
+diff --git a/lib/providers/koin_provider.dart b/lib/providers/koin_provider.dart
+index 68b9f8b..4370f22 100644
+--- a/lib/providers/koin_provider.dart
++++ b/lib/providers/koin_provider.dart
+@@ -42,6 +42,7 @@ class KoinProvider with ChangeNotifier {
+   double get activationDiscount => _activationDiscount;
+   double get totalAktivasiPRO =>
+       _activationFee - (_activationFee * _activationDiscount / 100);
++  bool get isActivationFree => totalAktivasiPRO <= 0;
+ 
+   List<Map<String, dynamic>> _koinPackages = [];
+   List<Map<String, dynamic>> get koinPackages => _koinPackages;
+diff --git a/lib/shared/widgets/report_access_placeholder.dart b/lib/shared/widgets/report_access_placeholder.dart
+index fa357f8..b7ba150 100644
+--- a/lib/shared/widgets/report_access_placeholder.dart
++++ b/lib/shared/widgets/report_access_placeholder.dart
+@@ -7,6 +7,10 @@ class ReportAccessPlaceholder extends StatelessWidget {
+   final String message;
+   final String? caption;
+   final bool compact;
++  final List<String>? highlights;
++  final String? accessNote;
++  final String? actionLabel;
++  final VoidCallback? onActionTap;
+ 
+   const ReportAccessPlaceholder({
+     super.key,
+@@ -15,6 +19,10 @@ class ReportAccessPlaceholder extends StatelessWidget {
+     required this.message,
+     this.caption,
+     this.compact = false,
++    this.highlights,
++    this.accessNote,
++    this.actionLabel,
++    this.onActionTap,
+   });
+ 
+   @override
+diff --git a/linux/flutter/generated_plugin_registrant.cc b/linux/flutter/generated_plugin_registrant.cc
+index ea3bde6..c98d4c3 100644
+--- a/linux/flutter/generated_plugin_registrant.cc
++++ b/linux/flutter/generated_plugin_registrant.cc
+@@ -6,12 +6,17 @@
+ 
+ #include "generated_plugin_registrant.h"
+ 
++#include <audioplayers_linux/audioplayers_linux_plugin.h>
+ #include <file_selector_linux/file_selector_plugin.h>
+ #include <flutter_secure_storage_linux/flutter_secure_storage_linux_plugin.h>
+ #include <gtk/gtk_plugin.h>
++#include <printing/printing_plugin.h>
+ #include <url_launcher_linux/url_launcher_plugin.h>
+ 
+ void fl_register_plugins(FlPluginRegistry* registry) {
++  g_autoptr(FlPluginRegistrar) audioplayers_linux_registrar =
++      fl_plugin_registry_get_registrar_for_plugin(registry, "AudioplayersLinuxPlugin");
++  audioplayers_linux_plugin_register_with_registrar(audioplayers_linux_registrar);
+   g_autoptr(FlPluginRegistrar) file_selector_linux_registrar =
+       fl_plugin_registry_get_registrar_for_plugin(registry, "FileSelectorPlugin");
+   file_selector_plugin_register_with_registrar(file_selector_linux_registrar);
+@@ -21,6 +26,9 @@ void fl_register_plugins(FlPluginRegistry* registry) {
+   g_autoptr(FlPluginRegistrar) gtk_registrar =
+       fl_plugin_registry_get_registrar_for_plugin(registry, "GtkPlugin");
+   gtk_plugin_register_with_registrar(gtk_registrar);
++  g_autoptr(FlPluginRegistrar) printing_registrar =
++      fl_plugin_registry_get_registrar_for_plugin(registry, "PrintingPlugin");
++  printing_plugin_register_with_registrar(printing_registrar);
+   g_autoptr(FlPluginRegistrar) url_launcher_linux_registrar =
+       fl_plugin_registry_get_registrar_for_plugin(registry, "UrlLauncherPlugin");
+   url_launcher_plugin_register_with_registrar(url_launcher_linux_registrar);
+diff --git a/linux/flutter/generated_plugins.cmake b/linux/flutter/generated_plugins.cmake
+index 1e154fe..91e518e 100644
+--- a/linux/flutter/generated_plugins.cmake
++++ b/linux/flutter/generated_plugins.cmake
+@@ -3,9 +3,11 @@
+ #
+ 
+ list(APPEND FLUTTER_PLUGIN_LIST
++  audioplayers_linux
+   file_selector_linux
+   flutter_secure_storage_linux
+   gtk
++  printing
+   url_launcher_linux
+ )
+ 
+diff --git a/macos/Flutter/GeneratedPluginRegistrant.swift b/macos/Flutter/GeneratedPluginRegistrant.swift
+index 300c3c6..4b429db 100644
+--- a/macos/Flutter/GeneratedPluginRegistrant.swift
++++ b/macos/Flutter/GeneratedPluginRegistrant.swift
+@@ -6,7 +6,7 @@ import FlutterMacOS
+ import Foundation
+ 
+ import app_links
+-import blue_thermal_printer
++import audioplayers_darwin
+ import device_info_plus
+ import file_picker
+ import file_selector_macos
+@@ -16,16 +16,20 @@ import flutter_contacts
+ import flutter_local_notifications
+ import flutter_secure_storage_darwin
+ import google_sign_in_ios
++import in_app_purchase_storekit
+ import mobile_scanner
+ import package_info_plus
++import print_bluetooth_thermal
++import printing
+ import share_plus
+ import shared_preferences_foundation
++import sign_in_with_apple
+ import sqflite_darwin
+ import url_launcher_macos
+ 
+ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+   AppLinksMacosPlugin.register(with: registry.registrar(forPlugin: "AppLinksMacosPlugin"))
+-  BlueThermalPrinterPlugin.register(with: registry.registrar(forPlugin: "BlueThermalPrinterPlugin"))
++  AudioplayersDarwinPlugin.register(with: registry.registrar(forPlugin: "AudioplayersDarwinPlugin"))
+   DeviceInfoPlusMacosPlugin.register(with: registry.registrar(forPlugin: "DeviceInfoPlusMacosPlugin"))
+   FilePickerPlugin.register(with: registry.registrar(forPlugin: "FilePickerPlugin"))
+   FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
+@@ -35,10 +39,14 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
+   FlutterLocalNotificationsPlugin.register(with: registry.registrar(forPlugin: "FlutterLocalNotificationsPlugin"))
+   FlutterSecureStorageDarwinPlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStorageDarwinPlugin"))
+   FLTGoogleSignInPlugin.register(with: registry.registrar(forPlugin: "FLTGoogleSignInPlugin"))
++  InAppPurchasePlugin.register(with: registry.registrar(forPlugin: "InAppPurchasePlugin"))
+   MobileScannerPlugin.register(with: registry.registrar(forPlugin: "MobileScannerPlugin"))
+   FPPPackageInfoPlusPlugin.register(with: registry.registrar(forPlugin: "FPPPackageInfoPlusPlugin"))
++  PrintBluetoothThermalPlugin.register(with: registry.registrar(forPlugin: "PrintBluetoothThermalPlugin"))
++  PrintingPlugin.register(with: registry.registrar(forPlugin: "PrintingPlugin"))
+   SharePlusMacosPlugin.register(with: registry.registrar(forPlugin: "SharePlusMacosPlugin"))
+   SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
++  SignInWithApplePlugin.register(with: registry.registrar(forPlugin: "SignInWithApplePlugin"))
+   SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin"))
+   UrlLauncherPlugin.register(with: registry.registrar(forPlugin: "UrlLauncherPlugin"))
+ }
+diff --git a/windows/flutter/generated_plugin_registrant.cc b/windows/flutter/generated_plugin_registrant.cc
+index 4a0e22d..fa7f099 100644
+--- a/windows/flutter/generated_plugin_registrant.cc
++++ b/windows/flutter/generated_plugin_registrant.cc
+@@ -7,16 +7,21 @@
+ #include "generated_plugin_registrant.h"
+ 
+ #include <app_links/app_links_plugin_c_api.h>
++#include <audioplayers_windows/audioplayers_windows_plugin.h>
+ #include <file_selector_windows/file_selector_windows.h>
+ #include <firebase_core/firebase_core_plugin_c_api.h>
+ #include <flutter_secure_storage_windows/flutter_secure_storage_windows_plugin.h>
+ #include <permission_handler_windows/permission_handler_windows_plugin.h>
++#include <print_bluetooth_thermal/print_bluetooth_thermal_plugin_c_api.h>
++#include <printing/printing_plugin.h>
+ #include <share_plus/share_plus_windows_plugin_c_api.h>
+ #include <url_launcher_windows/url_launcher_windows.h>
+ 
+ void RegisterPlugins(flutter::PluginRegistry* registry) {
+   AppLinksPluginCApiRegisterWithRegistrar(
+       registry->GetRegistrarForPlugin("AppLinksPluginCApi"));
++  AudioplayersWindowsPluginRegisterWithRegistrar(
++      registry->GetRegistrarForPlugin("AudioplayersWindowsPlugin"));
+   FileSelectorWindowsRegisterWithRegistrar(
+       registry->GetRegistrarForPlugin("FileSelectorWindows"));
+   FirebaseCorePluginCApiRegisterWithRegistrar(
+@@ -25,6 +30,10 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
+       registry->GetRegistrarForPlugin("FlutterSecureStorageWindowsPlugin"));
+   PermissionHandlerWindowsPluginRegisterWithRegistrar(
+       registry->GetRegistrarForPlugin("PermissionHandlerWindowsPlugin"));
++  PrintBluetoothThermalPluginCApiRegisterWithRegistrar(
++      registry->GetRegistrarForPlugin("PrintBluetoothThermalPluginCApi"));
++  PrintingPluginRegisterWithRegistrar(
++      registry->GetRegistrarForPlugin("PrintingPlugin"));
+   SharePlusWindowsPluginCApiRegisterWithRegistrar(
+       registry->GetRegistrarForPlugin("SharePlusWindowsPluginCApi"));
+   UrlLauncherWindowsRegisterWithRegistrar(
+diff --git a/windows/flutter/generated_plugins.cmake b/windows/flutter/generated_plugins.cmake
+index 9893f81..efab8b2 100644
+--- a/windows/flutter/generated_plugins.cmake
++++ b/windows/flutter/generated_plugins.cmake
+@@ -4,10 +4,13 @@
+ 
+ list(APPEND FLUTTER_PLUGIN_LIST
+   app_links
++  audioplayers_windows
+   file_selector_windows
+   firebase_core
+   flutter_secure_storage_windows
+   permission_handler_windows
++  print_bluetooth_thermal
++  printing
+   share_plus
+   url_launcher_windows
+ )

@@ -1,0 +1,23 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+api
+
+# Dependency directories
+vendor/
+
+# Environment configuration
+.env
+.env.local
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log

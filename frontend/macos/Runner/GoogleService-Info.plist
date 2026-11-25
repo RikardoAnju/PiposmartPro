@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>880106217872-auok3t3l4c5bu1nub5k59bclae3ppchq.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.880106217872-auok3t3l4c5bu1nub5k59bclae3ppchq</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>880106217872-dhv5j8bif9jcsjl7lne3qgr1rf08spg6.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCuwV5LAywQ6TGMsUi4CeehUX8FPgtO0fM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>880106217872</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.ayocucinew</string>
+	<key>PROJECT_ID</key>
+	<string>ayocuci-apps-fda03</string>
+	<key>STORAGE_BUCKET</key>
+	<string>ayocuci-apps-fda03.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:880106217872:ios:f2541ebb7463d2b694d315</string>
+</dict>
+</plist>

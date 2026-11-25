@@ -1,0 +1,57 @@
+.env.example
+23.aab
+AuthKey_77278VVPW3.p8
+SubscriptionKey_62NS48T97C.p8
+android/app/src/main/res/raw/ayocuci_ping.wav
+android/app/src/main/res/raw/notif.wav
+android/build/reports/problems/problems-report.html
+android/build_log.txt
+assets/fonts/inter/Inter-Bold.ttf
+assets/fonts/inter/Inter-Medium.ttf
+assets/fonts/inter/Inter-Regular.ttf
+assets/fonts/inter/Inter-SemiBold.ttf
+assets/fonts/roboto/Roboto-Bold.ttf
+assets/fonts/roboto/Roboto-Medium.ttf
+assets/fonts/roboto/Roboto-Regular.ttf
+assets/fonts/roboto/Roboto-SemiBold.ttf
+assets/icons/logo/logo_ayocuci_512x512_ios.png
+assets/icons/logo/logo_login_screen.webp
+assets/icons/notification/notif.wav
+assets/maskot/1 501.png
+assets/maskot/2 10.png
+assets/maskot/3 1.png
+assets/maskot/4 1.png
+assets/maskot/outlet_pro_mascot.png
+assets/onboarding/1/2 12.png
+assets/onboarding/1/image 272.png
+assets/onboarding/1/image 281.png
+assets/onboarding/1/image 303.png
+assets/onboarding/2/4 2.png
+assets/onboarding/2/Frame 3588.png
+assets/onboarding/3/1 502.png
+assets/onboarding/3/image 300.png
+assets/onboarding/3/image 302.png
+assets/sounds/Create_a_short,_brig_#1-1782277035857.wav
+assets/sounds/Create_a_short,_brig_#3-1782277030612.wav
+assets/sounds/Create_a_short,_warm_#2-1782276923279.wav
+ios/Runner 2026-06-30 15-43-56/Ayo Cuci.ipa
+ios/Runner 2026-06-30 15-43-56/DistributionSummary.plist
+ios/Runner 2026-06-30 15-43-56/ExportOptions.plist
+ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+lib/data/models/printer_device_model.dart
+lib/shared/widgets/app_update_prompt_card.dart
+lib/shared/widgets/dashed_divider.dart
+private_keys/AuthKey_77278VVPW3.p8
+recovery/current-worktree-2026-07-20.patch
+recovery/stash0.patch
+recovery/stash1.patch
+recovery/stash2.patch
+recovery/stash3.patch
+recovery/stash4.patch
+recovery/untracked-files-2026-07-20.txt
+scripts/build_and_upload_ios.sh
+scripts/build_ios_prod.sh
+scripts/upload_ios_ipa.sh
+test/widget_test.dart
+tool/run_android_dev.sh
+tool/run_android_prod.sh

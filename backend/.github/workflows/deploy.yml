@@ -1,0 +1,334 @@
+name: Deploy AyoCuci API
+
+on:
+  push:
+    branches:
+      - main
+      - development
+      - qa/deposit
+  pull_request:
+    branches:
+      - main
+      - development
+      - qa/deposit
+
+env:
+  # Image tetap di GHCR. Tag branch (mutable) + tag SHA (immutable, untuk rollback).
+  IMAGE_REPO: ghcr.io/ayocuci/ayocuci-api
+
+jobs:
+  build:
+    name: Build & push image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Pada event pull_request, github.ref_name = "<nomor>/merge" dan nama
+      # branch bisa mengandung "/", keduanya bukan Docker tag yang valid.
+      # Ganti "/" -> "-" agar build validasi PR tidak gagal.
+      - name: Compute safe image ref
+        id: imgref
+        run: |
+          ref="${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}"
+          echo "safe_ref=${ref//\//-}" >> "$GITHUB_OUTPUT"
+
+      # Login hanya saat push (bukan PR) — PR cukup validasi build tanpa push.
+      - name: Log in to GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          tags: |
+            ${{ env.IMAGE_REPO }}:${{ steps.imgref.outputs.safe_ref }}
+            ${{ env.IMAGE_REPO }}:${{ steps.imgref.outputs.safe_ref }}-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development' || github.ref == 'refs/heads/qa/deposit')
+    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        env:
+          APP_ENV: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+          APP_HOST: ${{ vars.AYOCUCI_API_HOST || (github.ref_name == 'main' && 'api.ayocuci.id' || 'api-dev.ayocuci.id') }}
+          CONTAINER_NAME: ${{ github.ref_name == 'main' && 'AyoCuci-Admin-API' || 'AyoCuci-Admin-API-Dev' }}
+          DB_DSN_VALUE: ${{ secrets.DB_DSN }}
+          JWT_VALUE: ${{ secrets.JWT_SECRET }}
+          CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          MIDTRANS_MERCHANT_ID_VALUE: ${{ secrets.MIDTRANS_MERCHANT_ID }}
+          MIDTRANS_CLIENT_KEY_VALUE: ${{ secrets.MIDTRANS_CLIENT_KEY }}
+          MIDTRANS_SERVER_KEY_VALUE: ${{ secrets.MIDTRANS_SERVER_KEY }}
+          MIDTRANS_IS_PRODUCTION_VALUE: ${{ secrets.MIDTRANS_IS_PRODUCTION }}
+          FONNTE_TOKEN: ${{ secrets.FONNTE_TOKEN }}
+          FONNTE_TOKEN_SECONDARY: ${{ secrets.FONNTE_TOKEN_SECONDARY }}
+          FONNTE_TOKENS: ${{ secrets.FONNTE_TOKENS }}
+          # Grup WA notifikasi topup — hanya diset di environment production,
+          # kosong di development sehingga notifikasi grup mati di dev.
+          FONNTE_GROUP_ID: ${{ vars.FONNTE_GROUP_ID }}
+          IMPERSONATION_SECRET_VALUE: ${{ secrets.IMPERSONATION_SECRET }}
+          RESEND_API_KEY_VALUE: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL_VALUE: ${{ secrets.RESEND_FROM_EMAIL }}
+          RESEND_FROM_NAME_VALUE: ${{ vars.RESEND_FROM_NAME }}
+          RESEND_REPLY_TO_VALUE: ${{ vars.RESEND_REPLY_TO }}
+          FIREBASE_SERVICE_ACCOUNT_JSON_BASE64_VALUE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON_BASE64 }}
+          REDIS_ADDR_VALUE: ${{ secrets.REDIS_ADDR }}
+          REDIS_USERNAME_VALUE: ${{ secrets.REDIS_USERNAME }}
+          REDIS_PASSWORD_VALUE: ${{ secrets.REDIS_PASSWORD }}
+          REDIS_DB_VALUE: ${{ secrets.REDIS_DB }}
+          APPLE_BUNDLE_ID_VALUE: ${{ vars.APPLE_BUNDLE_ID }}
+          APPLE_SHARED_SECRET_VALUE: ${{ secrets.APPLE_SHARED_SECRET }}
+          APPLE_IAP_PRODUCT_IDS_VALUE: ${{ vars.APPLE_IAP_PRODUCT_IDS }}
+          GEMINI_API_KEY_VALUE: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL_VALUE: ${{ vars.GEMINI_MODEL }}
+          AI_DB_DSN_VALUE: ${{ secrets.AI_DB_DSN }}
+          NOBU_BASE_URL_VALUE: ${{ vars.NOBU_BASE_URL }}
+          NOBU_QR_VALID_SECONDS_VALUE: ${{ vars.NOBU_QR_VALID_SECONDS }}
+          NOBU_CLIENT_ID_VALUE: ${{ secrets.NOBU_CLIENT_ID }}
+          NOBU_CLIENT_SECRET_VALUE: ${{ secrets.NOBU_CLIENT_SECRET }}
+          NOBU_PARTNER_ID_VALUE: ${{ secrets.NOBU_PARTNER_ID }}
+          NOBU_MERCHANT_ID_VALUE: ${{ secrets.NOBU_MERCHANT_ID }}
+          NOBU_SUB_MERCHANT_ID_VALUE: ${{ secrets.NOBU_SUB_MERCHANT_ID }}
+          NOBU_STORE_ID_VALUE: ${{ secrets.NOBU_STORE_ID }}
+          NOBU_TERMINAL_ID_VALUE: ${{ secrets.NOBU_TERMINAL_ID }}
+          NOBU_CHANNEL_ID_VALUE: ${{ secrets.NOBU_CHANNEL_ID }}
+          NOBU_IP_ADDRESS_VALUE: ${{ vars.NOBU_IP_ADDRESS }}
+          NOBU_PLATFORM_FEE_PERCENT_VALUE: ${{ vars.NOBU_PLATFORM_FEE_PERCENT }}
+          NOBU_PRIVATE_KEY_VALUE: ${{ secrets.NOBU_PRIVATE_KEY }}
+          STORAGE_DRIVER_VALUE: ${{ vars.STORAGE_DRIVER }}
+          MYSQL_NETWORK_NAME_VALUE: ${{ vars.MYSQL_NETWORK_NAME }}
+          OSS_ENDPOINT_VALUE: ${{ vars.OSS_ENDPOINT }}
+          OSS_BUCKET_VALUE: ${{ vars.OSS_BUCKET }}
+          OSS_PREFIX_VALUE: ${{ vars.OSS_PREFIX }}
+          OSS_OBJECT_ACL_VALUE: ${{ vars.OSS_OBJECT_ACL }}
+          OSS_PUBLIC_BASE_URL_VALUE: ${{ vars.OSS_PUBLIC_BASE_URL }}
+          OSS_ACCESS_KEY_ID_VALUE: ${{ secrets.OSS_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET_VALUE: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+        run: |
+          set -euo pipefail
+
+          required() {
+            local name="$1"
+            local value="$2"
+            test -n "$value" || { echo "$name secret is required"; exit 1; }
+          }
+
+          write_env() {
+            local key="$1"
+            local value="$2"
+            value="${value//\'/\'\\\'\'}"
+            printf "%s='%s'\n" "$key" "$value" >> .env
+          }
+
+          required DB_DSN "$DB_DSN_VALUE"
+          required JWT_SECRET "$JWT_VALUE"
+
+          : > .env
+          write_env APP_PORT "8080"
+          write_env DB_DSN "$DB_DSN_VALUE"
+          write_env JWT_SECRET "$JWT_VALUE"
+          write_env GOOGLE_CLIENT_ID "$CLIENT_ID"
+          write_env MIDTRANS_MERCHANT_ID "$MIDTRANS_MERCHANT_ID_VALUE"
+          write_env MIDTRANS_CLIENT_KEY "$MIDTRANS_CLIENT_KEY_VALUE"
+          write_env MIDTRANS_SERVER_KEY "$MIDTRANS_SERVER_KEY_VALUE"
+          write_env MIDTRANS_IS_PRODUCTION "${MIDTRANS_IS_PRODUCTION_VALUE:-false}"
+          write_env ENV "$APP_ENV"
+          write_env FONNTE_TOKEN "$FONNTE_TOKEN"
+          write_env FONNTE_TOKEN_SECONDARY "$FONNTE_TOKEN_SECONDARY"
+          write_env FONNTE_TOKENS "$FONNTE_TOKENS"
+          write_env FONNTE_GROUP_ID "$FONNTE_GROUP_ID"
+          # Impersonation: set secret ini HANYA di environment yang boleh (mis.
+          # development). Kosong (default) = fitur impersonate nonaktif total.
+          write_env IMPERSONATION_SECRET "$IMPERSONATION_SECRET_VALUE"
+          write_env RESEND_API_KEY "$RESEND_API_KEY_VALUE"
+          write_env RESEND_FROM_EMAIL "$RESEND_FROM_EMAIL_VALUE"
+          write_env RESEND_FROM_NAME "${RESEND_FROM_NAME_VALUE:-AyoCuci}"
+          write_env RESEND_REPLY_TO "$RESEND_REPLY_TO_VALUE"
+          write_env FIREBASE_SERVICE_ACCOUNT_JSON_BASE64 "$FIREBASE_SERVICE_ACCOUNT_JSON_BASE64_VALUE"
+          write_env APP_NAME "AyoCuci"
+          write_env AYOCUCI_API_HOST "${APP_HOST:-api.ayocuci.id}"
+          write_env CONTAINER_NAME "${CONTAINER_NAME}"
+          write_env REDIS_ADDR "${REDIS_ADDR_VALUE:-Redis-Server:6379}"
+          write_env REDIS_USERNAME "$REDIS_USERNAME_VALUE"
+          write_env REDIS_PASSWORD "$REDIS_PASSWORD_VALUE"
+          write_env REDIS_DB "${REDIS_DB_VALUE:-0}"
+          write_env APPLE_BUNDLE_ID "$APPLE_BUNDLE_ID_VALUE"
+          write_env APPLE_SHARED_SECRET "$APPLE_SHARED_SECRET_VALUE"
+          write_env APPLE_IAP_PRODUCT_IDS "$APPLE_IAP_PRODUCT_IDS_VALUE"
+          write_env GEMINI_API_KEY "$GEMINI_API_KEY_VALUE"
+          write_env GEMINI_MODEL "${GEMINI_MODEL_VALUE:-gemini-3.6-flash}"
+          write_env AI_DB_DSN "$AI_DB_DSN_VALUE"
+          write_env NOBU_BASE_URL "${NOBU_BASE_URL_VALUE:-https://sandbox-api.nobubank.com}"
+          write_env NOBU_QR_VALID_SECONDS "${NOBU_QR_VALID_SECONDS_VALUE:-900}"
+          write_env NOBU_CLIENT_ID "$NOBU_CLIENT_ID_VALUE"
+          write_env NOBU_CLIENT_SECRET "$NOBU_CLIENT_SECRET_VALUE"
+          write_env NOBU_PARTNER_ID "$NOBU_PARTNER_ID_VALUE"
+          write_env NOBU_MERCHANT_ID "$NOBU_MERCHANT_ID_VALUE"
+          write_env NOBU_SUB_MERCHANT_ID "$NOBU_SUB_MERCHANT_ID_VALUE"
+          write_env NOBU_STORE_ID "$NOBU_STORE_ID_VALUE"
+          write_env NOBU_TERMINAL_ID "$NOBU_TERMINAL_ID_VALUE"
+          write_env NOBU_CHANNEL_ID "$NOBU_CHANNEL_ID_VALUE"
+          write_env NOBU_IP_ADDRESS "$NOBU_IP_ADDRESS_VALUE"
+          write_env NOBU_PLATFORM_FEE_PERCENT "${NOBU_PLATFORM_FEE_PERCENT_VALUE:-0}"
+          write_env NOBU_PRIVATE_KEY "$NOBU_PRIVATE_KEY_VALUE"
+          write_env STORAGE_DRIVER "${STORAGE_DRIVER_VALUE:-local}"
+          write_env MYSQL_NETWORK_NAME "${MYSQL_NETWORK_NAME_VALUE:-msyql-database_default}"
+          write_env OSS_ENDPOINT "${OSS_ENDPOINT_VALUE:-https://oss-ap-southeast-3.aliyuncs.com}"
+          write_env OSS_BUCKET "$OSS_BUCKET_VALUE"
+          write_env OSS_ACCESS_KEY_ID "$OSS_ACCESS_KEY_ID_VALUE"
+          write_env OSS_ACCESS_KEY_SECRET "$OSS_ACCESS_KEY_SECRET_VALUE"
+          write_env OSS_PREFIX "${OSS_PREFIX_VALUE:-uploads}"
+          write_env OSS_OBJECT_ACL "${OSS_OBJECT_ACL_VALUE:-public-read}"
+          write_env OSS_PUBLIC_BASE_URL "$OSS_PUBLIC_BASE_URL_VALUE"
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Copy .env to server
+        env:
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          scp -o StrictHostKeyChecking=no -P "$SSH_PORT" .env "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/.env.next"
+
+      # Server tidak lagi build dari source — cukup file compose untuk menjalankan
+      # image yang sudah dibangun di CI.
+      - name: Copy compose file to server
+        env:
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          set -euo pipefail
+          scp -o StrictHostKeyChecking=no -P "$SSH_PORT" docker-compose.yml "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/docker-compose.yml"
+
+      - name: Deploy to server
+        env:
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_BRANCH: ${{ github.ref_name }}
+          # Must match the normalized tag generated in Compute safe image ref.
+          API_IMAGE: ${{ env.IMAGE_REPO }}:${{ github.ref_name == 'qa/deposit' && 'qa-deposit' || github.ref_name }}-${{ github.sha }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          ssh -o StrictHostKeyChecking=no -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "DEPLOY_PATH='$DEPLOY_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' API_IMAGE='$API_IMAGE' GHCR_USER='$GHCR_USER' GHCR_TOKEN='$GHCR_TOKEN' bash -s" << 'EOF'
+          set -euo pipefail
+
+          echo "==> Masuk folder deploy"
+          cd "$DEPLOY_PATH"
+
+          echo "==> Login GHCR & tarik image"
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+          export API_IMAGE
+          docker pull "$API_IMAGE"
+
+          echo "==> Menyiapkan environment"
+          EXISTING_REDIS_PASSWORD=""
+          if [ -f .env ]; then
+            EXISTING_REDIS_PASSWORD="$(grep '^REDIS_PASSWORD=' .env | tail -n1 | cut -d= -f2- | sed "s/^'//;s/'$//")"
+          fi
+
+          NEXT_REDIS_ADDR="$(grep '^REDIS_ADDR=' .env.next | tail -n1 | cut -d= -f2- | sed "s/^'//;s/'$//")"
+          NEXT_REDIS_PASSWORD="$(grep '^REDIS_PASSWORD=' .env.next | tail -n1 | cut -d= -f2- | sed "s/^'//;s/'$//")"
+          if [ -z "$NEXT_REDIS_PASSWORD" ] && [ "$NEXT_REDIS_ADDR" = "Redis-Server:6379" ]; then
+            if [ -n "$EXISTING_REDIS_PASSWORD" ]; then
+              NEXT_REDIS_PASSWORD="$EXISTING_REDIS_PASSWORD"
+            else
+              NEXT_REDIS_PASSWORD="$(openssl rand -hex 24)"
+            fi
+            sed -i.bak "s/^REDIS_PASSWORD=.*/REDIS_PASSWORD='$NEXT_REDIS_PASSWORD'/" .env.next
+          fi
+          mv .env.next .env
+          CONTAINER_NAME="$(grep '^CONTAINER_NAME=' .env | tail -n1 | cut -d= -f2- | sed "s/^'//;s/'$//")"
+
+          echo "==> Memastikan Docker network tersedia"
+          MYSQL_NETWORK_NAME="$(grep '^MYSQL_NETWORK_NAME=' .env | tail -n1 | cut -d= -f2- | sed "s/^'//;s/'$//")"
+          docker network create ayocuci-network || true
+          docker network create traefik-network || true
+          docker network create "${MYSQL_NETWORK_NAME:-msyql-database_default}" || true
+
+          if [ "$NEXT_REDIS_ADDR" = "Redis-Server:6379" ]; then
+            echo "==> Menghubungkan Redis lokal ke network API"
+            docker network connect ayocuci-network Redis-Server || true
+            if [ -n "$NEXT_REDIS_PASSWORD" ]; then
+              docker restart Redis-Server
+              docker exec Redis-Server redis-cli CONFIG_SECURE_KEY SET requirepass "$NEXT_REDIS_PASSWORD" \
+                || docker exec Redis-Server redis-cli --no-auth-warning -a "$NEXT_REDIS_PASSWORD" CONFIG_SECURE_KEY SET requirepass "$NEXT_REDIS_PASSWORD" \
+                || docker exec Redis-Server redis-cli --no-auth-warning -a "$EXISTING_REDIS_PASSWORD" CONFIG_SECURE_KEY SET requirepass "$NEXT_REDIS_PASSWORD" \
+                || true
+            fi
+          fi
+
+          echo "==> Validasi konfigurasi Compose"
+          docker compose config >/dev/null
+
+          echo "==> Swap ke image baru"
+          # Paksa recreate agar container tidak terus menjalankan image lama.
+          docker compose up -d --force-recreate --remove-orphans
+
+          echo "==> Memastikan container memakai image yang baru"
+          RUNNING_IMAGE="$(docker inspect --format '{{.Config.Image}}' "$CONTAINER_NAME" 2>/dev/null || true)"
+          if [ "$RUNNING_IMAGE" != "$API_IMAGE" ]; then
+            echo "Container memakai image '$RUNNING_IMAGE', expected '$API_IMAGE'"
+            docker compose ps
+            exit 1
+          fi
+
+          echo "==> Health check API"
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null; then
+              echo "API healthy"
+              break
+            fi
+            if [ "$i" -eq 20 ]; then
+              echo "API health check failed"
+              docker compose ps
+              docker compose logs --tail=120 admin-api || true
+              if [ -n "${CONTAINER_NAME:-}" ]; then
+                docker logs --tail=120 "$CONTAINER_NAME" || true
+              fi
+              exit 1
+            fi
+            sleep 3
+          done
+
+          echo "==> Cleanup sisa images manual & dangling"
+          docker image prune -af
+          EOF

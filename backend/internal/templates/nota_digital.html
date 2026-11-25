@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota Digital - AyoCuci</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --red: #F4593B;
+            --red-light: #fef0ed;
+            --red-mid: #f47d63;
+            --dark: #1a1a1a;
+            --gray: #6b7280;
+            --gray-light: #f4f4f5;
+            --border: #e5e7eb;
+            --white: #ffffff;
+            --blue: #2563eb;
+            --blue-light: #eff6ff;
+            --green: #059669;
+            --green-light: #d1fae5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #f7f7f8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 0 40px 0;
+        }
+
+        /* ── Header ── */
+        .header-band {
+            width: 100%;
+            background: var(--red);
+            padding: 28px 24px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-band::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120%;
+            height: 60px;
+            background: #f7f7f8;
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        }
+
+        .header-band::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .06);
+        }
+
+        .outlet-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -.3px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .outlet-logo {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 12px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.14);
+            overflow: hidden;
+            display: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .outlet-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .outlet-address,
+        .outlet-phone {
+            font-size: 13px;
+            color: rgba(255, 255, 255, .75);
+            position: relative;
+            z-index: 1;
+        }
+
+        .outlet-address {
+            margin-top: 4px;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+            width: 100%;
+            max-width: 400px;
+            margin-top: -8px;
+            padding: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ── Status Tracker ── */
+        .tracker-section {
+            background: var(--red-light);
+            border-radius: 16px;
+            padding: 20px 16px;
+            margin-bottom: 20px;
+        }
+
+        .tracker-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--red);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .tracker-steps {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .tracker-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+
+        .tracker-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 22px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .tracker-step.done:not(:last-child)::after {
+            background: var(--red);
+            opacity: .4;
+        }
+
+        .tracker-step.active:not(:last-child)::after {
+            background: repeating-linear-gradient(90deg, var(--red) 0px, var(--red) 6px, transparent 6px, transparent 12px);
+        }
+
+        .step-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--white);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            position: relative;
+            z-index: 2;
+            transition: all .3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+        }
+
+        .tracker-step.done .step-circle {
+            background: var(--red-light);
+            border-color: var(--red-mid);
+        }
+
+        .tracker-step.active .step-circle {
+            background: var(--red);
+            border-color: var(--red);
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                box-shadow: 0 0 0 0px rgba(244, 89, 59, .3), 0 2px 8px rgba(244, 89, 59, .3);
+            }
+
+            70% {
+                box-shadow: 0 0 0 8px rgba(244, 89, 59, 0), 0 2px 8px rgba(244, 89, 59, .3);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0px rgba(244, 89, 59, 0), 0 2px 8px rgba(244, 89, 59, .3);
+            }
+        }
+
+        .step-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--gray);
+            margin-top: 8px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .tracker-step.done .step-label {
+            color: var(--red-mid);
+        }
+
+        .tracker-step.active .step-label {
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        .step-circle svg {
+            color: var(--red);
+            opacity: .35;
+            transition: opacity .3s;
+        }
+
+        .tracker-step.done .step-circle svg {
+            opacity: .6;
+        }
+
+        .tracker-step.active .step-circle svg {
+            color: #fff;
+            opacity: 1;
+        }
+
+        .tracker-steps.updated .step-circle {
+            animation: pop .35s ease;
+        }
+
+        @keyframes pop {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.18);
+            }
+        }
+
+        .tracker-batal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0 0;
+        }
+
+        .batal-badge {
+            background: #fee2e2;
+            color: #b91c1c;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ── QR ── */
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0 16px;
+            border-bottom: 1.5px dashed var(--border);
+            margin-bottom: 20px;
+        }
+
+        .qr-box {
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 12px rgba(244, 89, 59, .12);
+            border: 1.5px solid var(--red-light);
+            margin-bottom: 14px;
+        }
+
+        #qrcode canvas,
+        #qrcode img {
+            display: block;
+            border-radius: 4px;
+        }
+
+        .trx-code {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--red);
+            background: var(--red-light);
+            padding: 6px 16px;
+            border-radius: 100px;
+            letter-spacing: .5px;
+        }
+
+        /* ── Customer info ── */
+        .customer-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        /* ── Info grid ── */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: var(--gray-light);
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+
+        .info-item.full {
+            grid-column: 1 / -1;
+        }
+
+        .info-item-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .info-item .label {
+            font-size: 11px;
+            color: var(--gray);
+            font-weight: 500;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .info-item .value {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            line-height: 1.3;
+        }
+
+        /* ── Antar Jemput Section ── */
+        .aj-section {
+            background: var(--blue-light);
+            border: 1.5px solid #bfdbfe;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .aj-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+
+        .aj-title svg {
+            flex-shrink: 0;
+        }
+
+        .aj-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .aj-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border: 1px solid #dbeafe;
+        }
+
+        .aj-icon-wrap {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .aj-icon-wrap.jemput {
+            background: #eff6ff;
+            color: var(--blue);
+        }
+
+        .aj-icon-wrap.antar {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .aj-body {
+            flex: 1;
+        }
+
+        .aj-type-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 2px;
+        }
+
+        .aj-type-label.jemput {
+            color: var(--blue);
+        }
+
+        .aj-type-label.antar {
+            color: #16a34a;
+        }
+
+        .aj-addr {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+
+        .aj-addr.empty {
+            color: var(--gray);
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .aj-meta {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .aj-time-badge {
+            font-size: 11px;
+            font-weight: 600;
+            background: var(--gray-light);
+            color: var(--gray);
+            padding: 2px 8px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .aj-biaya-badge {
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--blue-light);
+            color: var(--blue);
+            padding: 2px 8px;
+            border-radius: 100px;
+        }
+
+        .aj-biaya-badge.antar {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .aj-driver {
+            font-size: 11px;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+        }
+
+        .aj-driver svg {
+            width: 11px;
+            height: 11px;
+            flex-shrink: 0;
+        }
+
+        .aj-status-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 100px;
+            align-self: flex-start;
+            white-space: nowrap;
+        }
+
+        .aj-status-badge.pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .aj-status-badge.done {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* ── Detail rows ── */
+        .details-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            gap: 8px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            flex: 1;
+        }
+
+        .detail-qty {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 2px;
+        }
+
+        .detail-note {
+            font-size: 11px;
+            color: var(--gray);
+            font-weight: 500;
+            margin-top: 3px;
+            line-height: 1.35;
+        }
+
+        .detail-price {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+            white-space: nowrap;
+        }
+
+        /* ── Total ── */
+        .total-section {
+            background: var(--gray-light);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 8px;
+        }
+
+        .total-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .total-row .amount {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .total-row.discount .amount {
+            color: #059669;
+        }
+
+        /* ── Pembulatan ── */
+        .total-row.rounding-row .amount {
+            color: #7c3aed;
+        }
+
+        .total-divider {
+            border: none;
+            border-top: 1.5px solid var(--border);
+            margin: 10px 0;
+        }
+
+        .total-row.grand {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .total-row.grand .amount {
+            color: var(--red);
+            font-size: 15px;
+        }
+
+        .total-row.sisa {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .total-row.sisa .amount {
+            color: #d97706;
+            font-weight: 700;
+        }
+
+        .total-row.dp-row .amount {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .total-row.aj-jemput-row .amount {
+            color: var(--blue);
+        }
+
+        .total-row.aj-antar-row .amount {
+            color: #16a34a;
+        }
+
+        /* ── Status badge ── */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 100px;
+        }
+
+        .status-lunas {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-belum {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* ── Footer ── */
+        .footer-text {
+            text-align: center;
+            font-size: 12px;
+            color: var(--gray);
+            line-height: 1.6;
+            padding-top: 16px;
+            border-top: 1.5px dashed var(--border);
+        }
+
+        .powered {
+            text-align: center;
+            font-size: 11px;
+            color: #c4c4c6;
+            margin-top: 20px;
+            letter-spacing: .5px;
+        }
+
+        .powered span {
+            color: var(--red);
+            font-weight: 600;
+        }
+
+        /* ── State boxes ── */
+        .state-box {
+            text-align: center;
+            padding: 48px 24px;
+        }
+
+        .state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .state-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .state-msg {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .fade-in {
+            animation: fadeIn .4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── History Accordion ── */
+        .history-section {
+            margin-bottom: 20px;
+        }
+
+        .history-accordion-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--red-light);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .history-accordion-btn:hover {
+            background: #fde4dd;
+        }
+
+        .history-accordion-btn .acc-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--red);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .history-accordion-btn .acc-chevron {
+            transition: transform .3s ease;
+            color: var(--red);
+            flex-shrink: 0;
+        }
+
+        .history-accordion-btn.open .acc-chevron {
+            transform: rotate(180deg);
+        }
+
+        .history-timeline-wrap {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height .35s ease, padding .3s ease;
+        }
+
+        .history-timeline-wrap.open {
+            max-height: 2000px;
+            padding-top: 14px;
+        }
+
+        .history-timeline {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hist-item {
+            display: flex;
+            gap: 12px;
+            padding-bottom: 14px;
+        }
+
+        .hist-item.last {
+            padding-bottom: 0;
+        }
+
+        .hist-line-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+            width: 32px;
+        }
+
+        .hist-dot-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--red-light);
+            border: 2px solid var(--red-mid);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--red);
+        }
+
+        .hist-dot-circle svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .hist-line {
+            width: 2px;
+            flex: 1;
+            background: var(--border);
+            border-left: 2px dashed var(--border);
+            margin-top: 4px;
+            min-height: 12px;
+        }
+
+        .hist-body {
+            flex: 1;
+            background: var(--gray-light);
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .hist-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+            flex-wrap: wrap;
+        }
+
+        .hist-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--dark);
+            flex: 1;
+        }
+
+        .hist-time {
+            font-size: 10px;
+            color: var(--gray);
+            font-family: 'DM Mono', monospace;
+            white-space: nowrap;
+        }
+
+        .hist-value {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 4px;
+        }
+
+        .hist-old {
+            font-size: 11px;
+            color: var(--gray);
+            background: var(--border);
+            padding: 2px 8px;
+            border-radius: 100px;
+            text-decoration: line-through;
+        }
+
+        .hist-arrow {
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        .hist-new {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--red);
+            background: var(--red-light);
+            padding: 2px 8px;
+            border-radius: 100px;
+        }
+
+        .hist-actor {
+            font-size: 11px;
+            color: var(--gray);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .hist-actor svg {
+            width: 11px;
+            height: 11px;
+            flex-shrink: 0;
+        }
+
+        .hist-note {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--red);
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-band">
+        <div class="outlet-logo" id="outletLogoWrap">
+            <img id="outletLogo" alt="Logo Outlet">
+        </div>
+        <div class="outlet-name" id="outletName">AyoCuci Laundry</div>
+        <div class="outlet-address" id="outletAddress"></div>
+        <div class="outlet-phone" id="outletPhone"></div>
+    </div>
+
+    <div class="card" id="mainCard">
+
+        <!-- Loading -->
+        <div class="state-box" id="loadingState">
+            <div class="state-icon">⏳</div>
+            <div class="state-title">Memuat Nota...</div>
+            <div class="state-msg">Mohon tunggu sebentar</div>
+        </div>
+
+        <!-- Nota Content -->
+        <div id="notaContent" style="display:none">
+
+            <!-- Status Tracker -->
+            <div class="tracker-section">
+                <div class="tracker-title">Status Cucian</div>
+                <div class="tracker-steps" id="trackerSteps"></div>
+                <div class="tracker-batal" id="trackerBatal" style="display:none">
+                    <div class="batal-badge">❌ Pesanan Dibatalkan</div>
+                </div>
+            </div>
+
+            <!-- QR Code -->
+            <div class="qr-section">
+                <div class="qr-box">
+                    <div id="qrcode"></div>
+                </div>
+                <div class="trx-code" id="trxCode">-</div>
+            </div>
+
+            <!-- Customer -->
+            <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:flex-start">
+                <div>
+                    <div class="section-label">Pelanggan</div>
+                    <div class="customer-name" id="customerName">-</div>
+                    <div style="font-size:12px; color:var(--gray); margin-top:2px" id="customerAddress"></div>
+                </div>
+                <div id="statusBadge"></div>
+            </div>
+
+            <!-- Info Grid -->
+            <div class="info-grid">
+                <div class="info-item full">
+                    <div class="label">Kasir</div>
+                    <div class="value" id="kasirName">-</div>
+                </div>
+                <div class="info-item full">
+                    <div class="label">Tanggal Masuk</div>
+                    <div class="value" id="entryDate">-</div>
+                </div>
+                <div class="info-item full">
+                    <div class="label">Estimasi Selesai</div>
+                    <div class="value" id="estDate">-</div>
+                </div>
+            </div>
+
+            <!-- Antar Jemput Section -->
+            <div class="aj-section" id="ajSection" style="display:none">
+                <div class="aj-title">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+                            fill="currentColor" />
+                    </svg>
+                    Layanan Antar Jemput
+                </div>
+                <div class="aj-rows" id="ajRows"></div>
+            </div>
+
+            <!-- Detail Layanan -->
+            <div class="details-section">
+                <div class="section-label">Detail Layanan</div>
+                <div id="detailList"></div>
+            </div>
+
+            <div class="details-section" id="washedItemSection" style="display:none">
+                <div class="section-label">Item yang Dicuci</div>
+                <div id="washedItemList"></div>
+            </div>
+
+            <!-- Total -->
+            <div class="total-section">
+                <div class="total-row">
+                    <span>Subtotal Layanan</span>
+                    <span class="amount" id="subtotal">-</span>
+                </div>
+                <div class="total-row aj-jemput-row" id="biayaJemputRow" style="display:none">
+                    <span>🏍️ Biaya Jemput</span>
+                    <span class="amount" id="biayaJemputAmt">-</span>
+                </div>
+                <div class="total-row aj-antar-row" id="biayaAntarRow" style="display:none">
+                    <span>🚗 Biaya Antar</span>
+                    <span class="amount" id="biayaAntarAmt">-</span>
+                </div>
+                <div class="total-row discount" id="diskonRow" style="display:none">
+                    <span>Diskon</span>
+                    <span class="amount" id="diskonAmt">-</span>
+                </div>
+                <!-- ── Pembulatan ── -->
+                <div class="total-row rounding-row" id="roundingRow" style="display:none">
+                    <span>Pembulatan</span>
+                    <span class="amount" id="roundingAmt">-</span>
+                </div>
+                <hr class="total-divider">
+                <div class="total-row grand">
+                    <span>Total</span>
+                    <span class="amount" id="grandTotal">-</span>
+                </div>
+                <hr class="total-divider">
+                <div class="total-row" id="cashRow" style="display:none">
+                    <span>Cash Diterima</span>
+                    <span class="amount" id="cashAmt">-</span>
+                </div>
+                <div class="total-row" id="kembalianRow" style="display:none">
+                    <span>Kembalian</span>
+                    <span class="amount" id="kembalianAmt">-</span>
+                </div>
+                <div class="total-row dp-row" id="dpRow" style="display:none">
+                    <span>DP Dibayar</span>
+                    <span class="amount" id="dpAmt">-</span>
+                </div>
+                <div class="total-row sisa" id="sisaRow" style="display:none">
+                    <span>Sisa Bayar</span>
+                    <span class="amount" id="sisaAmt">-</span>
+                </div>
+            </div>
+
+            <!-- Riwayat Aktivitas -->
+            <div class="history-section" id="historySection" style="display:none">
+                <button class="history-accordion-btn" id="historyAccBtn" onclick="toggleHistory()">
+                    <span class="acc-title">Riwayat Aktivitas</span>
+                    <svg class="acc-chevron" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                </button>
+                <div class="history-timeline-wrap" id="historyTimelineWrap">
+                    <div class="history-timeline" id="historyList"></div>
+                </div>
+            </div>
+
+            <div class="footer-text" id="footerText"></div>
+        </div>
+
+        <!-- Error -->
+        <div class="state-box" id="errorState" style="display:none">
+            <div class="state-icon">🔍</div>
+            <div class="state-title">Nota Tidak Ditemukan</div>
+            <div class="state-msg">Link ini sudah kadaluarsa atau tidak valid</div>
+        </div>
+
+    </div>
+
+    <div class="powered">Powered by <span>Ayo Cuci POS</span></div>
+
+    <script>
+        const API_BASE = 'https://api.ayocuci.id/api/v1';
+        const POLL_INTERVAL = 10000;
+
+        const fmt = (n) => new Intl.NumberFormat('id-ID', {
+            style: 'currency', currency: 'IDR', minimumFractionDigits: 0
+        }).format(n ?? 0);
+
+        const fmtDate = (iso) => {
+            if (!iso) return '-';
+            return new Date(iso).toLocaleDateString('id-ID', {
+                weekday: 'long', day: '2-digit', month: '2-digit',
+                year: '2-digit', hour: '2-digit', minute: '2-digit'
+            });
+        };
+
+        const esc = (value) => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+
+        function show(id, display = 'flex') {
+            const el = document.getElementById(id);
+            if (el) el.style.display = display;
+        }
+
+        const ICONS = {
+            antrian: `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 3c1.5 0 2.9.4 4.1 1L14.5 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>`,
+            proses: `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor" stroke-width="2"/>
+                <circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="2"/>
+                <circle cx="7" cy="8" r="1" fill="currentColor"/><circle cx="10" cy="8" r="1" fill="currentColor"/>
+                <line x1="13" y1="8" x2="18" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>`,
+            siapambil: `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <path d="M4 7h3l1-3h8l1 3h3v13H4V7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M9 4c0 0 .5 2 3 2s3-2 3-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M8 14l2.5 2.5L16 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>`,
+            selesai: `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+                <path d="M7.5 12l3 3 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>`,
+        };
+
+        const STATUS_STEPS = [
+            { key: 'Antrian', label: 'Antrian', icon: ICONS.antrian },
+            { key: 'Proses', label: 'Proses', icon: ICONS.proses },
+            { key: 'Siap Ambil', label: 'Siap Ambil', icon: ICONS.siapambil },
+            { key: 'Selesai', label: 'Selesai', icon: ICONS.selesai },
+        ];
+
+        let lastStatusOrder = null;
+        let pollTimer = null;
+        let encodedId = null;
+
+        function getActiveStep(statusOrder) {
+            return STATUS_STEPS.findIndex(s => s.key === statusOrder);
+        }
+
+        function renderTracker(statusOrder, animate = false) {
+            const activeIdx = getActiveStep(statusOrder);
+            const isBatal = statusOrder === 'Batal';
+            const isSelesai = statusOrder === 'Selesai';
+            const stepsEl = document.getElementById('trackerSteps');
+            const batalEl = document.getElementById('trackerBatal');
+
+            if (isBatal) {
+                stepsEl.style.display = 'none';
+                batalEl.style.display = 'flex';
+                stopPolling();
+                return;
+            }
+
+            stepsEl.style.display = 'flex';
+            batalEl.style.display = 'none';
+
+            stepsEl.innerHTML = STATUS_STEPS.map((step, i) => {
+                const cls = i < activeIdx ? 'done' : i === activeIdx ? 'active' : '';
+                return `<div class="tracker-step ${cls}">
+                    <div class="step-circle">${step.icon}</div>
+                    <div class="step-label">${step.label}</div>
+                </div>`;
+            }).join('');
+
+            if (animate) {
+                stepsEl.classList.remove('updated');
+                void stepsEl.offsetWidth;
+                stepsEl.classList.add('updated');
+            }
+
+            if (isSelesai) stopPolling();
+        }
+
+        function stopPolling() {
+            if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        }
+
+        async function pollStatus() {
+            if (!encodedId) return;
+            try {
+                const res = await fetch(`${API_BASE}/nota/public/${encodedId}`);
+                if (!res.ok) return;
+                const json = await res.json();
+                const newStatus = json.data?.transaction?.status_order;
+                if (newStatus && newStatus !== lastStatusOrder) {
+                    lastStatusOrder = newStatus;
+                    renderTracker(newStatus, true);
+                }
+            } catch (e) { console.warn('Polling error:', e); }
+        }
+
+        async function loadNota() {
+            const parts = window.location.pathname.split('/');
+            encodedId = parts[parts.length - 1];
+            if (!encodedId) { showError(); return; }
+
+            try {
+                const res = await fetch(`${API_BASE}/nota/public/${encodedId}`);
+                if (!res.ok) { showError(); return; }
+                const json = await res.json();
+                const trx = json.data?.transaction;
+                const config = json.data?.nota_config;
+                if (!trx) { showError(); return; }
+
+                renderNota(trx, config, encodedId);
+
+                const terminal = ['Selesai', 'Batal'];
+                if (!terminal.includes(trx.status_order)) {
+                    pollTimer = setInterval(pollStatus, POLL_INTERVAL);
+                }
+            } catch (e) { console.error(e); showError(); }
+        }
+
+        /* ── ANTAR JEMPUT RENDERER ── */
+        function renderAntarJemput(trx) {
+            const jemputBiaya = trx.jemput_biaya ?? trx.tr_jemput_biaya ?? 0;
+            const antarBiaya = trx.antar_biaya ?? trx.tr_antar_biaya ?? 0;
+            const jemputAlamat = trx.jemput_alamat ?? trx.tr_jemput_alamat ?? '';
+            const antarAlamat = trx.antar_alamat ?? trx.tr_antar_alamat ?? '';
+            const jemputWaktu = trx.jemput_waktu ?? trx.tr_jemput_waktu ?? null;
+            const antarWaktu = trx.antar_waktu ?? trx.tr_antar_waktu ?? null;
+            const jemputDriver = trx.jemput_driver ?? trx.tr_jemput_driver ?? '';
+            const antarDriver = trx.antar_driver ?? trx.tr_antar_driver ?? '';
+            const jemputStatus = trx.jemput_status ?? trx.tr_jemput_status ?? '';
+            const antarStatus = trx.antar_status ?? trx.tr_antar_status ?? '';
+
+            const hasJemput = jemputBiaya > 0 || jemputAlamat;
+            const hasAntar = antarBiaya > 0 || antarAlamat;
+
+            if (!hasJemput && !hasAntar) {
+                document.getElementById('ajSection').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('ajSection').style.display = 'block';
+
+            const fmtWaktu = (iso) => {
+                if (!iso) return null;
+                const d = new Date(iso);
+                return d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' })
+                    + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            };
+
+            const statusBadge = (s) => {
+                if (!s) return '';
+                const cls = ['selesai', 'done', 'sudah'].some(k => s.toLowerCase().includes(k)) ? 'done' : 'pending';
+                return `<span class="aj-status-badge ${cls}">${s}</span>`;
+            };
+
+            const buildCard = ({ type, label, iconSvg, iconClass, addr, biaya, waktu, driver, status }) => {
+                const driverHtml = driver
+                    ? `<div class="aj-driver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>${driver}</div>`
+                    : '';
+                const waktuHtml = waktu
+                    ? `<span class="aj-time-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3" stroke-linecap="round"/></svg>${fmtWaktu(waktu)}</span>`
+                    : '';
+                const biayaHtml = biaya > 0
+                    ? `<span class="aj-biaya-badge ${type}">${fmt(biaya)}</span>` : '';
+
+                return `
+                <div class="aj-card">
+                    <div class="aj-icon-wrap ${type}">${iconSvg}</div>
+                    <div class="aj-body">
+                        <div class="aj-type-label ${type}">${label}</div>
+                        <div class="aj-addr${addr ? '' : ' empty'}">${addr || 'Alamat tidak dicantumkan'}</div>
+                        <div class="aj-meta">${waktuHtml}${biayaHtml}</div>
+                        ${driverHtml}
+                    </div>
+                    ${statusBadge(status)}
+                </div>`;
+            };
+
+            const iconJemput = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11a2 2 0 012 2v3m-4 12a2 2 0 104 0 2 2 0 00-4 0zm7 0a2 2 0 104 0 2 2 0 00-4 0zm-7-4h8l3-8H6l3 8z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>`;
+            const iconAntar = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 12h13M13 8l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 6v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>`;
+
+            let html = '';
+            if (hasJemput) {
+                html += buildCard({ type: 'jemput', label: 'Jemput', iconSvg: iconJemput, iconClass: 'jemput', addr: jemputAlamat, biaya: jemputBiaya, waktu: jemputWaktu, driver: jemputDriver, status: jemputStatus });
+            }
+            if (hasAntar) {
+                html += buildCard({ type: 'antar', label: 'Antar', iconSvg: iconAntar, iconClass: 'antar', addr: antarAlamat, biaya: antarBiaya, waktu: antarWaktu, driver: antarDriver, status: antarStatus });
+            }
+
+            document.getElementById('ajRows').innerHTML = html;
+
+            // Biaya di total section
+            if (jemputBiaya > 0) {
+                show('biayaJemputRow');
+                document.getElementById('biayaJemputAmt').textContent = fmt(jemputBiaya);
+            }
+            if (antarBiaya > 0) {
+                show('biayaAntarRow');
+                document.getElementById('biayaAntarAmt').textContent = fmt(antarBiaya);
+            }
+        }
+
+        function renderNota(trx, config, id) {
+            // Header outlet
+            const outletLogoWrap = document.getElementById('outletLogoWrap');
+            const outletLogo = document.getElementById('outletLogo');
+            if (config?.cn_sett_logo && config?.cn_logo) {
+                outletLogo.src = config.cn_logo;
+                outletLogoWrap.style.display = 'block';
+            } else {
+                outletLogo.removeAttribute('src');
+                outletLogoWrap.style.display = 'none';
+            }
+            document.getElementById('outletName').textContent = config?.cn_nama_outlet || 'AyoCuci Laundry';
+            document.getElementById('outletAddress').textContent = config?.cn_alamat || '';
+            document.getElementById('outletPhone').textContent = config?.cn_kontak || '';
+
+            // Tracker
+            lastStatusOrder = trx.status_order || 'Antrian';
+            renderTracker(lastStatusOrder);
+
+            // QR Code
+            new QRCode(document.getElementById('qrcode'), {
+                text: `${window.location.origin}/nota/${id}`,
+                width: 180, height: 180,
+                colorDark: '#1a1a1a', colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+            document.getElementById('trxCode').textContent = trx.id || '-';
+
+            // Pelanggan
+            document.getElementById('customerName').textContent =
+                (trx.pelanggan?.nama || trx.pelanggan?.name || '-').toUpperCase();
+            document.getElementById('customerAddress').textContent =
+                trx.pelanggan?.alamat || trx.pelanggan?.address || '';
+
+            const isLunas = trx.status_pembayaran === 'Lunas';
+            document.getElementById('statusBadge').innerHTML = `
+                <span class="status-badge ${isLunas ? 'status-lunas' : 'status-belum'}">
+                    <span class="status-dot"></span>
+                    ${isLunas ? 'Lunas' : 'Belum Lunas'}
+                </span>`;
+
+            document.getElementById('kasirName').textContent = trx.kasir_name || '-';
+            document.getElementById('entryDate').textContent = fmtDate(trx.created_at);
+            document.getElementById('estDate').textContent =
+                trx.details?.[0]?.ready_at ? fmtDate(trx.details[0].ready_at) : '-';
+
+            // ── Antar Jemput ──
+            renderAntarJemput(trx);
+
+            // Detail layanan
+            const detailList = document.getElementById('detailList');
+            detailList.innerHTML = trx.details?.length
+                ? trx.details.map(d => {
+                    const duration = d.duration ?? d.durasi ?? d.dtr_durasi ?? d.product_metadata?.durasi;
+                    const durationUnit = d.duration_unit ?? d.durasi_satuan ?? d.dtr_durasi_satuan ?? d.product_metadata?.durasi_satuan ?? '';
+                    const showDuration = config?.cn_sett_durasi !== false;
+                    const durationText = showDuration && duration && Number(duration) !== 0
+                        ? ` (${duration} ${durationUnit})`
+                        : '';
+                    return `
+                    <div class="detail-row">
+                        <div>
+                            <div class="detail-name">${d.nama_layanan || '-'}${durationText}</div>
+                            <div class="detail-qty">${d.qty || 0} ${d.satuan || ''}</div>
+                        </div>
+                        <div class="detail-price">${fmt(d.subtotal)}</div>
+                    </div>`;
+                }).join('')
+                : '<div class="detail-row"><div class="detail-name" style="color:var(--gray)">Tidak ada detail</div></div>';
+
+            const washedItems = Array.isArray(trx.items) ? trx.items : [];
+            const washedItemSection = document.getElementById('washedItemSection');
+            const washedItemList = document.getElementById('washedItemList');
+            if (washedItems.length) {
+                const itemName = (item) => {
+                    const master = item.master_item || item.MasterItem || {};
+                    const name = master.nama || master.Nama || item.nama || item.name || item.item_name || item.nama_item || item.keterangan || '';
+                    return String(name || '').trim() || '-';
+                };
+                const itemNote = (item) => {
+                    const note = String(item.keterangan || '').trim();
+                    return note && note !== itemName(item) ? note : '';
+                };
+                const groups = washedItems.reduce((acc, item) => {
+                    const serviceName = (item.service_name || '').trim();
+                    if (!acc[serviceName]) acc[serviceName] = [];
+                    acc[serviceName].push(item);
+                    return acc;
+                }, {});
+                washedItemList.innerHTML = Object.entries(groups).map(([serviceName, items]) => `
+                    ${serviceName ? `<div class="detail-name" style="color:var(--primary); margin:12px 0 4px">${esc(serviceName)}</div>` : ''}
+                    ${items.map(item => {
+                        const note = itemNote(item);
+                        return `
+                        <div class="detail-row">
+                            <div class="detail-name">
+                                ${esc(itemName(item))}
+                                ${note ? `<div class="detail-note">${esc(note)}</div>` : ''}
+                            </div>
+                            <div class="detail-qty">${esc(item.qty || 1)} pcs</div>
+                        </div>`;
+                    }).join('')}
+                `).join('');
+                washedItemSection.style.display = '';
+            }
+
+            // Kalkulasi
+            const subtotal = trx.total_kotor ?? 0;
+            const diskon = trx.potongan_diskon ?? 0;
+            const rounding = trx.rounding_amount ?? trx.tr_rounding ?? 0;
+            const total = trx.total_akhir ?? 0;
+            const dp = trx.dp_amount ?? trx.tr_dp ?? 0;
+            const sisa = trx.sisa_bayar ?? trx.tr_sisa ?? (total - dp);
+            const cash = trx.cash_received ?? trx.tr_cash ?? 0;
+            const kembalian = trx.change_amount ?? trx.tr_kembalian ?? 0;
+
+            document.getElementById('subtotal').textContent = fmt(subtotal);
+            document.getElementById('grandTotal').textContent = fmt(total);
+
+            if (diskon > 0) {
+                show('diskonRow');
+                document.getElementById('diskonAmt').textContent = '- ' + fmt(diskon);
+            }
+
+            // ── Tampilkan pembulatan jika ada ──
+            if (rounding !== 0) {
+                show('roundingRow');
+                const sign = rounding > 0 ? '+' : '-';
+                document.getElementById('roundingAmt').textContent = sign + ' ' + fmt(Math.abs(rounding));
+            }
+
+            if (isLunas) {
+                if (cash > 0) { show('cashRow'); document.getElementById('cashAmt').textContent = fmt(cash); }
+                if (kembalian > 0) { show('kembalianRow'); document.getElementById('kembalianAmt').textContent = fmt(kembalian); }
+            } else {
+                if (dp > 0) { show('dpRow'); document.getElementById('dpAmt').textContent = fmt(dp); }
+                if (sisa > 0) { show('sisaRow'); document.getElementById('sisaAmt').textContent = fmt(sisa); }
+            }
+
+            // History
+            renderHistory(trx);
+
+            // Footer
+            document.getElementById('footerText').textContent = config?.cn_sett_nota
+                ? (config?.cn_footer_nota || '')
+                : 'Terima kasih telah mempercayakan cucian Anda!';
+
+            // Tampilkan
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('notaContent').style.display = 'block';
+            document.getElementById('notaContent').classList.add('fade-in');
+        }
+
+        /* ── History ── */
+        const HIST_SVG = {
+            antrian: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+            proses: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="13" r="3.5" stroke="currentColor" stroke-width="2"/><circle cx="7" cy="8" r="1" fill="currentColor"/><circle cx="10" cy="8" r="1" fill="currentColor"/><line x1="13" y1="8" x2="18" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+            siapambil: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h3l1-3h8l1 3h3v13H4V7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 4c0 0 .5 2 3 2s3-2 3-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M8 14l2.5 2.5L16 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            selesai: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M7.5 12l3 3 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+            batal: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+            person: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`,
+        };
+
+        function buildHistoryFromTrx(trx) {
+            const logs = trx.logs || [];
+            if (!logs.length) return [];
+
+            const FIELD_LABEL = {
+                'status_order': 'Status Pesanan',
+                'status_order_bulk': 'Status Pesanan',
+                'payment': 'Pembayaran',
+                'alasan_batal': 'Alasan Pembatalan',
+            };
+
+            const iconForStatus = (val) => {
+                if (!val) return 'antrian';
+                const v = val.toLowerCase().replace(' ', '');
+                if (v === 'notadibuat' || v === 'antrian') return 'antrian';
+                if (v === 'proses') return 'proses';
+                if (v === 'siapambil') return 'siapambil';
+                if (v === 'selesai') return 'selesai';
+                if (v === 'batal') return 'batal';
+                return 'antrian';
+            };
+
+            const titleForPayment = (value) => {
+                const lower = (value || '').toLowerCase();
+                return lower.includes('pelunasan') ? 'Pelunasan' : 'Pembayaran';
+            };
+
+            const titleForLog = (log) => {
+                const val = log.NewValue || '';
+                const map = {
+                    'Nota Dibuat': 'Cucian baru masuk', 'Antrian': 'Masuk antrian',
+                    'Proses': 'Cucian dikerjakan', 'Siap Ambil': 'Pesanan siap diambil',
+                    'Selesai': 'Pesanan selesai', 'Batal': 'Pesanan dibatalkan',
+                };
+                if (log.Field === 'alasan_batal') return 'Alasan Pembatalan';
+                if (log.Field === 'payment') return titleForPayment(val);
+                return map[val] || (FIELD_LABEL[log.Field] || log.Field);
+            };
+
+            return logs.map(log => ({
+                title: titleForLog(log),
+                iconKey: log.Field === 'payment' ? 'selesai' : iconForStatus(log.NewValue),
+                from: log.Field === 'payment' ? null : (log.OldValue || null),
+                to: log.NewValue || null,
+                note: log.Field === 'alasan_batal' ? log.NewValue : null,
+                actor: log.ActorName || log.ActorID || 'Sistem',
+                time: log.CreatedAt || null,
+            }));
+        }
+
+        function toggleHistory() {
+            const btn = document.getElementById('historyAccBtn');
+            const wrap = document.getElementById('historyTimelineWrap');
+            btn.classList.toggle('open');
+            wrap.classList.toggle('open');
+        }
+
+        function renderHistory(trx) {
+            const section = document.getElementById('historySection');
+            const list = document.getElementById('historyList');
+            const entries = buildHistoryFromTrx(trx);
+            if (!entries.length) { section.style.display = 'none'; return; }
+            section.style.display = 'block';
+
+            const fmtHistTime = (iso) => {
+                if (!iso) return '';
+                const d = new Date(iso);
+                return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}, ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+            };
+
+            list.innerHTML = entries.map((e, i) => {
+                const isLast = i === entries.length - 1;
+                const timeStr = fmtHistTime(e.time);
+                const svgIcon = HIST_SVG[e.iconKey] || HIST_SVG.antrian;
+                const fmtVal = (v) => {
+                    if (!v) return v;
+                    return v.replace(/Rp\s?(\d+)/g, (_, n) =>
+                        'Rp ' + new Intl.NumberFormat('id-ID').format(Number(n))
+                    );
+                };
+                const transitionHtml = (e.from && e.to)
+                    ? `<div class="hist-value"><span class="hist-old">${fmtVal(e.from)}</span><span class="hist-arrow">→</span><span class="hist-new">${fmtVal(e.to)}</span></div>`
+                    : e.to ? `<div class="hist-value"><span class="hist-new">${fmtVal(e.to)}</span></div>` : '';
+                const noteHtml = e.note ? `<div class="hist-note">${fmtVal(e.note)}</div>` : '';
+                return `
+                <div class="hist-item${isLast ? ' last' : ''}">
+                    <div class="hist-line-wrap">
+                        <div class="hist-dot-circle">${svgIcon}</div>
+                        ${!isLast ? '<div class="hist-line"></div>' : ''}
+                    </div>
+                    <div class="hist-body">
+                        <div class="hist-header">
+                            <span class="hist-label">${e.title}</span>
+                            ${timeStr ? `<span class="hist-time">${timeStr}</span>` : ''}
+                        </div>
+                        ${transitionHtml}${noteHtml}
+                        <div class="hist-actor">${HIST_SVG.person} Oleh: ${e.actor}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function showError() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            const terminal = ['Selesai', 'Batal'];
+            if (document.hidden) {
+                if (pollTimer) clearInterval(pollTimer);
+            } else if (!terminal.includes(lastStatusOrder)) {
+                pollStatus();
+                pollTimer = setInterval(pollStatus, POLL_INTERVAL);
+            }
+        });
+
+        loadNota();
+    </script>
+
+</body>
+
+</html>

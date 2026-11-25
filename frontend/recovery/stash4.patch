@@ -1,0 +1,190 @@
+diff --git a/lib/core/utils/api_client.dart b/lib/core/utils/api_client.dart
+index be66e7e..dbc0903 100644
+--- a/lib/core/utils/api_client.dart
++++ b/lib/core/utils/api_client.dart
+@@ -7,6 +7,7 @@ class ApiClient {
+   // static const String _baseUrl = "http://localhost:8080/api/v1";
+   static const String _baseUrl = "https://api.ayocuci.id/api/v1";
+   static const String _plainUrl = "https://api.ayocuci.id";
++
+   // buat getter untuk baseUrl agar bisa diakses dari luar
+   static String get baseUrl => _baseUrl;
+   static String get plainUrl => _plainUrl;
+diff --git a/lib/providers/setting_provider.dart b/lib/providers/setting_provider.dart
+index 18546f6..0d4f8c5 100644
+--- a/lib/providers/setting_provider.dart
++++ b/lib/providers/setting_provider.dart
+@@ -10,13 +10,11 @@ class SettingProvider extends ChangeNotifier {
+   final _storage = const FlutterSecureStorage();
+ 
+   Map<String, dynamic>? _outletData;
+-  Map<String, dynamic>? _subscriptionData;
+   bool _isLoading = false;
+ 
+   StreamSubscription? _eventSubscription;
+ 
+   Map<String, dynamic>? get outletData => _outletData;
+-  Map<String, dynamic>? get subscriptionData => _subscriptionData;
+   bool get isLoading => _isLoading;
+ 
+   SettingProvider() {
+@@ -25,15 +23,11 @@ class SettingProvider extends ChangeNotifier {
+ 
+   void _listenToEvents() {
+     _eventSubscription = appEventBus.stream.listen((event) {
+-      // 1. Refresh full data jika ganti outlet atau notif sistem
+       if (event is OutletSwitched || event is SystemNotificationReceived) {
+-        debugPrint(
+-          "SettingProvider: Refreshing full data due to global event...",
+-        );
++        debugPrint("SettingProvider: Refreshing full data...");
+         fetchSettingsData();
+       }
+ 
+-      // 2. Refresh SALDO SAJA jika ada perubahan koin via WebSocket
+       if (event is CoinBalanceChanged) {
+         debugPrint("💰 SettingProvider: Real-time balance update triggered!");
+         refreshBalanceOnly();
+@@ -52,17 +46,42 @@ class SettingProvider extends ChangeNotifier {
+     ).format(koin).trim();
+   }
+ 
++  /// Menghitung sisa hari trial atau status aktivasi
+   String get daysLeft {
+-    final days = _subscriptionData?['days_left'];
+-    if (days == null) return "-";
+-    return "$days Hari";
++    if (_outletData == null) return "-";
++
++    // 1. Jika sudah aktivasi permanen
++    if (_outletData?['ot_activated_at'] != null) {
++      return "Aktif Selamanya";
++    }
++
++    // 2. Jika masih masa trial
++    final trialAtStr = _outletData?['ot_trial_at'];
++    if (trialAtStr != null) {
++      try {
++        final trialDate = DateTime.parse(trialAtStr);
++        final now = DateTime.now();
++        final difference = trialDate.difference(now).inDays;
++
++        if (difference <= 0) return "Trial Habis";
++        return "$difference Hari (Trial)";
++      } catch (e) {
++        return "-";
++      }
++    }
++
++    return "Belum Aktivasi";
+   }
+ 
+-  bool get isTrialAccount => _subscriptionData?['is_trial'] ?? false;
++  /// Mengecek apakah outlet masih dalam masa trial
++  bool get isTrialAccount => _outletData?['ot_activated_at'] == null;
++
++  /// Mengambil limit pegawai dari data outlet
++  int get maxPegawai => _outletData?['ot_max_pegawai'] ?? 2;
+ 
+   // --- ACTIONS ---
+ 
+-  /// Sinkronisasi Saldo: Hanya ambil data profile outlet untuk update koin di UI secara ringan
++  /// Sinkronisasi Saldo: Ringan, hanya update koin
+   Future<void> refreshBalanceOnly() async {
+     try {
+       final token = await _storage.read(key: 'access_token');
+@@ -73,15 +92,15 @@ class SettingProvider extends ChangeNotifier {
+ 
+       if (response.statusCode == 200 && profileRes['status'] == true) {
+         _outletData = profileRes['data'];
+-        notifyListeners(); // Card Saldo Orange langsung berubah!
+-        debugPrint("✅ SettingProvider: Balance Synced successfully.");
++        notifyListeners();
++        debugPrint("✅ SettingProvider: Balance Synced.");
+       }
+     } catch (e) {
+       debugPrint("SettingProvider Balance Sync Error: $e");
+     }
+   }
+ 
+-  /// Load Full Settings (Profile & Subscriptions) secara Paralel
++  /// Load Full Settings (Kini hanya perlu hit profile outlet karena data addon ada di sana)
+   Future<void> fetchSettingsData() async {
+     _isLoading = true;
+     notifyListeners();
+@@ -90,24 +109,15 @@ class SettingProvider extends ChangeNotifier {
+       final token = await _storage.read(key: 'access_token');
+       if (token == null) return;
+ 
+-      final results = await Future.wait([
+-        ApiClient.get('/outlet/profile', token: token),
+-        ApiClient.get('/subscriptions/status', token: token),
+-      ]);
++      // Cukup satu hit ke profile, karena skema baru menyimpan info trial & addon di tabel outlet
++      final response = await ApiClient.get('/outlet/profile', token: token);
++      final profileRes = jsonDecode(response.body);
+ 
+-      // Parsing Response Profil Outlet
+-      final profileRes = jsonDecode(results[0].body);
+-      if (results[0].statusCode == 200 && profileRes['status'] == true) {
++      if (response.statusCode == 200 && profileRes['status'] == true) {
+         _outletData = profileRes['data'];
+       }
+-
+-      // Parsing Response Langganan
+-      final subRes = jsonDecode(results[1].body);
+-      if (results[1].statusCode == 200 && subRes['status'] == true) {
+-        _subscriptionData = subRes['data'];
+-      }
+     } catch (e) {
+-      debugPrint("SettingProvider Full Fetch Error: $e");
++      debugPrint("SettingProvider Fetch Error: $e");
+     } finally {
+       _isLoading = false;
+       notifyListeners();
+@@ -116,14 +126,13 @@ class SettingProvider extends ChangeNotifier {
+ 
+   void clearData() {
+     _outletData = null;
+-    _subscriptionData = null;
+     _isLoading = false;
+     notifyListeners();
+   }
+ 
+   @override
+   void dispose() {
+-    _eventSubscription?.cancel(); // Mencegah memory leak
++    _eventSubscription?.cancel();
+     super.dispose();
+   }
+ }
+diff --git a/lib/screens/settings/setting_screen.dart b/lib/screens/settings/setting_screen.dart
+index 2c17e5f..e507929 100644
+--- a/lib/screens/settings/setting_screen.dart
++++ b/lib/screens/settings/setting_screen.dart
+@@ -183,17 +183,20 @@ class _SettingScreenState extends State<SettingScreen> {
+                         Expanded(
+                           child: _buildInfoCard(
+                             icon: Icons.calendar_month_rounded,
+-                            label: "Masa Aktif",
++                            label: "Status Akun",
+                             value: settingProv.daysLeft,
+-                            valueColor: const Color(0xFFE03131),
++                            // Warna merah jika masih trial, hijau jika sudah aktivasi permanen
++                            valueColor: settingProv.isTrialAccount
++                                ? const Color(0xFFE03131)
++                                : Colors.green.shade700,
+                           ),
+                         ),
+                         const SizedBox(width: 12),
+                         Expanded(
+                           child: _buildInfoCard(
+-                            icon: Icons.store_rounded,
+-                            label: "Jumlah Outlet",
+-                            value: "1",
++                            icon: Icons.people_alt_rounded,
++                            label: "Slot Pegawai",
++                            value: "${settingProv.maxPegawai} Orang",
+                             valueColor: const Color(0xFF2C3E50),
+                           ),
+                         ),

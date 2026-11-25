@@ -1,0 +1,54 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+build/
+
+# Android
+android/.gradle/
+android/gradle/
+android/.idea/
+android/*.keystore
+android/*.jks
+android/local.properties
+android/**/build/
+key.properties
+debug.properties
+
+# iOS
+ios/Pods/
+ios/Podfile.lock
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# Go
+vendor/
+*.out
+
+# Environment variables
+.env
+.env.local
+*.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
