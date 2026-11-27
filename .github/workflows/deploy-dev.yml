@@ -1,0 +1,40 @@
+name: Deploy Piposmart Dev
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "services/**"
+      - "docker-compose.hybrid.yml"
+      - ".github/workflows/deploy-dev.yml"
+
+concurrency:
+  group: piposmart-dev-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Deploy on VPS
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PIPOSMART_DEV_SSH_KEY }}
+          VPS_HOST: ${{ secrets.PIPOSMART_DEV_HOST }}
+          VPS_USER: ${{ secrets.PIPOSMART_DEV_USER }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
+          ssh-keyscan -H "$VPS_HOST" >> "$HOME/.ssh/known_hosts"
+          ssh -i "$HOME/.ssh/deploy_key" "$VPS_USER@$VPS_HOST" <<'REMOTE'
+          set -euo pipefail
+          cd /opt/piposmart-dev
+          git fetch origin main
+          git reset --hard origin/main
+          docker compose -f docker-compose.hybrid.yml up -d --build
+          docker image prune -f
+          REMOTE
